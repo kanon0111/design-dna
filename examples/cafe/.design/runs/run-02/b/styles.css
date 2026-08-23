@@ -1,0 +1,230 @@
+/* 案B — 自由度50%
+   解放: 主役22 ＋ 密度15 ＋ コントラスト9 ＋ 階層4 ＝ 50
+   固定: 構図（中央対称／l134 のまま） / 地の明度（ライト基調／両 ref のまま）
+         / 装飾量（罫線／l134 のまま）
+
+   振り方: 主役をタイポから【色面】へ。l162 のやり方で、セクションごとに
+           素材由来の一色をフル幅で敷き、面の並びそのものがページになる。
+           密度は【疎】— 面はたっぷり、中の文字は小さいまま。
+           コントラストは【高（パンチ）】へ振り、焙煎色の濃い面を一枚だけ差し込む。
+           階層は【フラット】— 見出しと本文の級数差をほぼ無くす。
+           = 淡い面が続いた先に、濃い面が一枚だけ来る。
+
+   DNA: 2階級のみ / 強調は級数と余白だけ / 色は素材由来
+        影・角丸なし（境界は色の切り替わり） / 矩形のまま / 字間はラテンのラベルにのみ
+*/
+
+:root{
+  /* 地の明度=ライト基調（固定）。l162 から取った素材の色 */
+  --paper:#fdfbf9;           /* ミルク */
+  --mist:#ecf0ef;            /* 湯気 */
+  --sage:#cfddbb;            /* 葉 */
+  --peach:#fae4d2;           /* 果実 */
+  --roast:#6b4a30;           /* 焙煎。コントラスト=高のための一枚 */
+
+  --ink:#1c1a17;             /* コントラスト=高。炭色より一段締める */
+  --ink-on-roast:#f3ece2;
+  --mute:#7c766e;
+  --line:rgba(28,26,23,.22);       /* 装飾=罫線（固定） */
+  --line-on-roast:rgba(243,236,226,.34);
+
+  --serif: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+  --sans: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+}
+
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--serif);
+  line-height:1.9;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── 色面 = 主役。境界は色の切り替わりだけで作る（影・角丸なし） ─── */
+.band{
+  /* 密度=疎。面の高さを文字量より大きく取る */
+  padding:7.5rem 1.5rem;
+}
+
+.band--mist  { background:var(--mist); }
+.band--sage  { background:var(--sage); }
+.band--peach { background:var(--peach); }
+.band--paper { background:var(--paper); }
+
+/* コントラスト=高。ページで一枚だけ濃い面 */
+.band--roast{
+  background:var(--roast);
+  color:var(--ink-on-roast);
+  padding-top:6rem;
+  padding-bottom:6rem;
+}
+
+/* 構図=中央対称（固定） */
+.inner{
+  max-width:32em;            /* 和文なので em */
+  margin:0 auto;
+  text-align:center;
+}
+
+/* ── ラベル: 2階級のうちの下側 ─────────────────────────── */
+.label{
+  font-family:var(--sans);
+  font-size:9px;
+  letter-spacing:.3em;
+  text-transform:uppercase;
+  color:var(--mute);
+  margin:0 0 1.6rem;
+}
+
+.band--roast .label{ color:rgba(243,236,226,.6); }
+
+/* ── 見出し: 階層=フラット。h1 / h2 / h3 / p の級数差をほぼ潰す ── */
+h1{
+  font-family:var(--serif);
+  font-size:1.75rem;         /* フラット。本文 1rem との差は 1.75 倍まで */
+  font-weight:400;
+  letter-spacing:0;
+  line-height:1.6;
+  margin:0 0 1.1rem;
+}
+
+h2{
+  font-family:var(--serif);
+  font-size:1.15rem;
+  font-weight:400;
+  margin:0 0 2.6rem;         /* 疎。見出しの下を大きく空ける */
+}
+
+h3{
+  font-family:var(--serif);
+  font-size:1rem;            /* 本文と同級。フラット */
+  font-weight:400;
+  margin:0 0 .5rem;
+}
+
+.tagline{
+  font-size:1rem;
+  margin:0;
+  line-height:2;
+}
+
+/* ── 営業時間 ─────────────────────────────────────────── */
+dl{
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  gap:1.15rem;               /* 疎 */
+}
+
+dl > div{
+  display:flex;
+  justify-content:center;
+  align-items:baseline;
+  gap:1.2rem;
+  /* 装飾=罫線（固定）。l134 の細い罫をここに残す */
+  padding-bottom:1.1rem;
+  border-bottom:1px solid var(--line);
+}
+
+dl > div:last-child{ border-bottom:0; padding-bottom:0; }
+
+dt{
+  color:var(--mute);
+  font-size:.9rem;
+  min-width:4.5em;
+  text-align:right;
+}
+
+dd{
+  margin:0;
+  font-size:1rem;
+  min-width:9em;
+  text-align:left;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ── メニュー ─────────────────────────────────────────── */
+ul{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:3.4rem;                /* 疎 */
+}
+
+li{ margin:0; }
+
+/* 画像素材が無いので、素材の色に寄せた矩形のプレースホルダを置く。
+   DNA: 矩形のまま、角丸・影なし */
+.swatch{
+  width:100%;
+  height:170px;
+  margin:0 auto 1.3rem;
+  max-width:22em;
+}
+
+.swatch--blend{ background:#c9a882; }   /* 浅煎りの液色 */
+.swatch--tart { background:#e6b7a0; }   /* 果実 */
+.swatch--soda { background:#dfe6c4; }   /* レモンと炭酸 */
+
+li p{
+  margin:0 auto;
+  font-size:1rem;            /* h3 と同級（フラット） */
+  color:var(--ink);
+  max-width:20em;
+  line-height:2;
+}
+
+/* ── 予約 ────────────────────────────────────────────── */
+/* DNA: UI部品に固有の色を与えない。面の色をそのまま背負う */
+button{
+  font-family:var(--serif);
+  font-size:1rem;            /* 階層=フラット。本文と同級のまま置く */
+  letter-spacing:0;
+  color:var(--ink-on-roast);
+  background:none;
+  border:0;
+  border-bottom:1px solid var(--line-on-roast);   /* 装飾=罫線 */
+  padding:.7rem .2rem;
+  cursor:pointer;
+  line-height:1.9;
+}
+
+/* ラテンのラベルだけ字間を開ける（DNA 6） */
+button::after{
+  content:" Reserve";
+  font-family:var(--sans);
+  font-size:9px;
+  letter-spacing:.3em;
+  text-transform:uppercase;
+  color:rgba(243,236,226,.6);
+  margin-left:.9em;
+}
+
+button:hover{ border-bottom-color:var(--ink-on-roast); }
+
+/* ── フッター ─────────────────────────────────────────── */
+footer .inner{
+  padding-top:0;
+}
+
+.addr{
+  font-size:.9rem;
+  color:var(--mute);
+  margin:0 0 1.4rem;
+  line-height:2;
+}
+
+footer .label{ margin-bottom:0; }
+
+@media (max-width:520px){
+  .band{ padding:4.5rem 1.25rem; }
+  dl > div{ gap:.9rem; }
+  dt{ min-width:4em; }
+  dd{ min-width:8em; }
+  .swatch{ height:130px; }
+}

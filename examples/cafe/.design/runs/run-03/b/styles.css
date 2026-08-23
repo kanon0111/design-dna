@@ -1,0 +1,196 @@
+/* 案B — 自由度60%
+   解放: 主役22 ＋ 地の明度20 ＋ 密度15 ＋ 装飾2 ＝ 59
+   固定: 構図（中央対称／l134 の骨格そのまま） / コントラスト（低・トーナル／両 ref のまま）
+         / 階層の跳ね（極端／l134 のまま）
+
+   振り方: 主役を【色面】へ。素材の色を敷いた帯が、中央軸の上に積み上がる。
+           地の明度を【ダーク基調】へ反転し、密度は【中】、装飾は【テクスチャ】。
+           コントラストは低のままなので、帯どうしは近い明度でしか違わない。
+           = 暗がりの中で、色面だけがセクションを切り替えていく。
+
+   DNA: 2階級のみ（セリフ／ラテン極小キャプス） / 強調は級数と余白だけ
+        色は素材由来（豆・果実・レモン・葉）で面としてだけ / 面の境界は色の切り替わりそのもの
+        影・角丸・立体化なし / 矩形のまま / 字間はラテンのラベルにのみ / 折り返しは em
+*/
+
+:root{
+  /* 地の明度=ダーク基調。ただしコントラスト=低（固定）なので純黒に落とさない */
+  --ink:#ded7ca;             /* 生成り側。純白 #fff は使わない */
+  --mute:#9a9186;            /* l134 の #99918d をダーク地に合わせて置く */
+
+  /* 素材から取った色を、暗い側で作り直したもの。UI 部品には配らない（DNA 3） */
+  --roast-deep:#241d17;      /* 焙煎した豆の殻 */
+  --mist-deep:#2b302e;       /* ミルク＝l162 のミストを暗い側へ */
+  --coffee:#33281e;          /* 浅煎りの液色 */
+  --fruit:#3a2b28;           /* タルトの果実 */
+  --citrus:#333524;          /* レモンの皮 */
+  --sage-deep:#2e382b;       /* 葉＝l162 のセージを暗い側へ */
+
+  --serif: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+  --sans: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+}
+
+*{ box-sizing:border-box; }
+
+html{ background:var(--roast-deep); }
+
+body{
+  margin:0;
+  background:var(--roast-deep);
+  color:var(--ink);
+  font-family:var(--serif);
+  line-height:1.85;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── 装飾=テクスチャ ──────────────────────────────────────
+   紙の簀の目のような細い横筋を、面の上に一様に敷く。
+   ハードストップだけで作り、面の「境界」の表現には使わない（DNA 4）。
+   境界はあくまで色が変わる場所そのもの */
+.band{
+  background-image:repeating-linear-gradient(
+    180deg,
+    rgba(255,255,255,.022) 0px,
+    rgba(255,255,255,.022) 1px,
+    rgba(0,0,0,0) 1px,
+    rgba(0,0,0,0) 4px
+  );
+}
+
+/* ── 構図=中央対称（固定）─────────────────────────────────
+   すべての帯が同じ中央軸に乗る。帯そのものは全幅 */
+.inner{
+  max-width:32em;            /* 和文なので em。ch は使わない */
+  margin:0 auto;
+  padding:0 1.5rem;
+  text-align:center;
+}
+
+/* ── 密度=中。面はたっぷり取り、面の中の文字は少なくする ───────── */
+.band{ padding:5.5rem 0; }
+
+/* ── 主役=色面。帯ごとに素材の色を替える ─────────────────── */
+.band-mast   { background-color:var(--roast-deep); padding:8.5rem 0 7.5rem; }
+.band-hours  { background-color:var(--mist-deep); }
+.band-title  { background-color:var(--roast-deep); padding-bottom:3rem; }
+.band-coffee { background-color:var(--coffee); }
+.band-tart   { background-color:var(--fruit); }
+.band-soda   { background-color:var(--citrus); }
+.band-reserve{ background-color:var(--sage-deep); padding:6.5rem 0; }
+.band-foot   { background-color:var(--roast-deep); padding:4.5rem 0 3.5rem; }
+
+/* ── ラベル: 2階級のうちの下側。ラテン大文字＋字間 ───────────────
+   和文には字間を持ち込まない（DNA 6） */
+.label{
+  font-family:var(--sans);
+  font-size:9px;
+  letter-spacing:.3em;
+  text-transform:uppercase;
+  color:var(--mute);
+  margin:0 0 1.6em;
+  line-height:1.9;
+}
+
+/* ── 見出し ───────────────────────────────────────────────
+   階層=極端（固定）。見出し級とラベル級の間に中間サイズを作らない。
+   強調は級数と余白だけ（DNA 2）。色も太字も囲みも使わない */
+h1{
+  font-family:var(--serif);
+  font-size:clamp(2.9rem, 7.5vw, 5.4rem);
+  font-weight:400;
+  line-height:1.18;
+  margin:0;
+}
+
+h2{
+  font-size:clamp(1.9rem, 4.4vw, 3rem);
+  font-weight:400;
+  line-height:1.3;
+  margin:0 0 1.6rem;
+}
+
+h3{
+  font-size:clamp(1.7rem, 4vw, 2.6rem);
+  font-weight:400;
+  line-height:1.3;
+  margin:0 0 1.1rem;
+}
+
+p{ margin:0; }
+
+.tagline{
+  font-size:1.05rem;
+  color:var(--mute);
+  margin-top:2.2rem;
+}
+
+/* ── 営業時間 ─────────────────────────────────────────── */
+.band-hours dl{
+  margin:0;
+  display:grid;
+  gap:.9rem;
+}
+
+.band-hours dl > div{
+  display:flex;
+  justify-content:center;
+  gap:1.6em;
+  align-items:baseline;
+}
+
+.band-hours dt{
+  font-size:.95rem;
+  color:var(--mute);
+  min-width:5em;
+  text-align:right;
+}
+
+.band-hours dd{
+  margin:0;
+  font-size:1.15rem;
+  min-width:8em;
+  text-align:left;
+}
+
+/* ── メニュー ─────────────────────────────────────────
+   1件＝1面。面の中の文字は見出し1行と説明1行だけ（密度=中） */
+.menu article p:last-child{
+  font-size:1rem;
+  color:var(--mute);
+  max-width:22em;
+  margin:0 auto;
+}
+
+/* ── 予約 ─────────────────────────────────────────────
+   UI 部品に固有の色を与えない（DNA 3）。塗りボタンにも囲みにもしない。
+   面の色がそのままボタンの地になる */
+.band-reserve button{
+  font-family:var(--serif);
+  font-size:clamp(1.7rem, 4vw, 2.6rem);
+  font-weight:400;
+  color:var(--ink);
+  background:none;
+  border:0;
+  padding:.3em .6em;
+  margin:0;
+  cursor:pointer;
+  line-height:1.3;
+}
+
+.band-reserve button:hover{ color:#fff; }
+
+/* ── フッター ─────────────────────────────────────────── */
+.addr{
+  font-size:.95rem;
+  color:var(--mute);
+  margin-bottom:2.4rem;
+}
+
+.band-foot .label{ margin:0; }
+
+@media (max-width: 640px){
+  .band{ padding:3.8rem 0; }
+  .band-mast{ padding:5.5rem 0 4.5rem; }
+  .band-hours dl > div{ flex-direction:column; gap:0; }
+  .band-hours dt,.band-hours dd{ text-align:center; min-width:0; }
+}

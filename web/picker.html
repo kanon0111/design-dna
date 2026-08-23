@@ -489,7 +489,7 @@ async function load(){
     try{ sel=JSON.parse(localStorage.getItem(KEY)||"{}"); }catch(_){ sel={}; }
     setStatus("サーバ未接続・ローカル保存のみ","ng");
   }
-  renderCats(); renderSlots();
+  renderCats(); renderSlots(); renderProposal();
   loadBrief();
 }
 /* ---------- AIに選んでもらう ---------- */
@@ -594,6 +594,23 @@ function renderProposal(){
   box2.querySelectorAll("[data-add]").forEach(function(b){
     b.onclick = function(){ addRole(b.dataset.add); };
   });
+  warnSkeleton();
+}
+
+// 構図（重み28）はフルページが無いと読み取れない。
+// Lapa / Awwwards はヒーロー切り抜きしか無いので、骨格枠に来たら伝える。
+function warnSkeleton(){
+  const old = document.getElementById("skelwarn");
+  if(old) old.remove();
+  const id = sel["骨格"];
+  const it = id ? byId[id] : null;
+  if(!it || it.src === "GODLY") return;
+  const box = document.getElementById("reasons");
+  box.insertAdjacentHTML("afterend",
+    '<p id="skelwarn" style="font-size:12px;color:var(--pick);line-height:1.7;margin:0 0 14px">' +
+    'この骨格（' + it.name + '）は<b>ヒーロー部分の画像しかありません</b>。' +
+    '構図と密度は読み取れないので、自由度を下げても再現されず、案ごとに変わります。' +
+    '構図まで借りたいなら GODLY の参照を選んでください。</p>');
 }
 
 // 空き枠に足す。次にカードを押したら「その枠」に入る。

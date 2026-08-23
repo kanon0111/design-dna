@@ -1,0 +1,200 @@
+/* 案C — 自由度60%
+   解放: 構図28 ＋ 主役22 ＋ コントラスト9 ＝ 59
+   固定: 地の明度（ライト基調／両 ref のまま） / 密度（疎／l134 のまま）
+         / 階層の跳ね（極端／l134 のまま） / 装飾（罫線／l134 のまま）
+
+   振り方: 構図を【左寄せ】へ。文字は紙の左の柱にだけ置き、右は最後まで空ける。
+           主役を【余白】へ。画面を持っているのは文字でも色面でもなく、空けた場所。
+           コントラストを【高（パンチ）】に開き、罫線も墨のまま引く。
+           = 何も置かない右半分を、細い罫線が横切って支える。
+
+   DNA: 2階級のみ（セリフ／ラテン極小キャプス） / 強調は級数と余白だけ
+        色は素材由来で面としてだけ / 影・角丸・グラデーションなし
+        矩形のまま / 字間はラテンのラベルにのみ / 折り返しは em
+*/
+
+:root{
+  /* 地の明度=ライト基調（固定）。l134 の生成りより一段白い側 */
+  --ground:#f4f2ee;
+  /* コントラスト=高。炭色ではなく墨まで落とし、罫線も同じ濃さで引く */
+  --ink:#0d0c0a;
+  --mute:#4f4943;
+  --rule:#0d0c0a;
+  --roast:#4a3728;           /* 焙煎した豆。ただし面は小さく取る（主役=余白） */
+
+  --serif: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+  --sans: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+}
+
+*{ box-sizing:border-box; }
+
+html{ background:var(--ground); }
+
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--serif);
+  line-height:1.95;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── 構図=左寄せ ─────────────────────────────────────────
+   中央軸を通さない。中身は左の柱に収め、右は最後まで空ける。
+   主役=余白なので、右を埋めない代わりに罫線だけが端まで伸びる */
+.sheet{
+  max-width:1180px;
+  margin:0 auto;
+  padding:0 clamp(1.4rem, 6vw, 6rem);
+}
+
+.row{
+  /* 装飾=罫線（固定）。面でも影でもなく1本の線で切り替える。
+     線は柱の外まで――空けた右側まで――伸びる */
+  border-top:1px solid var(--rule);
+  /* 密度=疎（固定）。線と線の間を大きく空ける */
+  padding:clamp(4.5rem, 12vh, 8.5rem) 0 clamp(5.5rem, 14vh, 10rem);
+}
+
+.row > *{
+  /* 中身だけが左の柱に収まる。右は空いたまま */
+  max-width:27em;            /* 和文なので em。ch は使わない */
+}
+
+.masthead{
+  border-top:0;
+  padding-top:clamp(5rem, 16vh, 11rem);
+}
+
+/* ── ラベル: 2階級のうちの下側。ラテン大文字＋字間 ───────────────
+   和文には字間を持ち込まない（DNA 6） */
+.label{
+  font-family:var(--sans);
+  font-size:9px;
+  letter-spacing:.3em;
+  text-transform:uppercase;
+  color:var(--mute);
+  margin:0 0 2.4em;
+  line-height:1.9;
+}
+
+/* ── 見出し ───────────────────────────────────────────────
+   階層=極端（固定）。見出し級とラベル級のあいだに中間サイズを作らない。
+   強調は級数と余白だけ（DNA 2） */
+h1{
+  font-family:var(--serif);
+  font-size:clamp(2.8rem, 6.5vw, 4.8rem);
+  font-weight:400;
+  line-height:1.2;
+  margin:0;
+}
+
+h2{
+  font-size:clamp(2rem, 4.6vw, 3.2rem);
+  font-weight:400;
+  line-height:1.28;
+  margin:0 0 clamp(2.4rem, 5vh, 3.6rem);
+}
+
+h3{
+  font-size:clamp(1.6rem, 3.4vw, 2.3rem);
+  font-weight:400;
+  line-height:1.3;
+  margin:0 0 .6rem;
+}
+
+p{ margin:0; }
+
+.tagline{
+  font-size:1.05rem;
+  color:var(--mute);
+  margin-top:2.6rem;
+  max-width:20em;
+}
+
+/* ── 素材の面（画像の代わり）─────────────────────────────
+   主役=余白なので、面は小さく取る。矩形のまま、影も角丸も掛けない */
+.plate{
+  width:11rem;
+  height:7rem;
+  background:var(--roast);
+  margin-top:clamp(3.5rem, 9vh, 6rem);
+}
+
+/* ── 営業時間 ─────────────────────────────────────────
+   密度=疎。3行しか置かず、行間を大きく取る */
+.hours dl{
+  margin:0;
+  display:grid;
+  gap:1.1rem;
+}
+
+.hours dl > div{
+  display:flex;
+  gap:2em;
+  align-items:baseline;
+}
+
+.hours dt{
+  font-size:.95rem;
+  color:var(--mute);
+  min-width:5em;
+}
+
+.hours dd{
+  margin:0;
+  font-size:1.2rem;
+}
+
+/* ── メニュー ─────────────────────────────────────────
+   密度=疎。3件を縦に、間を大きく空けて置く。囲まない */
+.menu ul{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:grid;
+  gap:clamp(2.8rem, 7vh, 4.5rem);
+}
+
+.menu li p{
+  font-size:1rem;
+  color:var(--mute);
+  max-width:21em;
+}
+
+/* ── 予約 ─────────────────────────────────────────────
+   UI 部品に固有の色を与えない（DNA 3）。塗りボタンにしない。
+   装飾=罫線（固定）なので、下に1本だけ引いて押せると示す */
+.reserve button{
+  font-family:var(--serif);
+  font-size:clamp(1.8rem, 4vw, 2.6rem);
+  font-weight:400;
+  color:var(--ink);
+  background:none;
+  border:0;
+  border-bottom:1px solid var(--rule);
+  padding:0 0 .18em;
+  margin:0;
+  cursor:pointer;
+  line-height:1.3;
+}
+
+.reserve button:hover{ color:var(--roast); border-bottom-color:var(--roast); }
+
+/* ── フッター ─────────────────────────────────────────── */
+footer{
+  padding-bottom:clamp(4rem, 10vh, 7rem);
+}
+
+.addr{
+  font-size:.95rem;
+  color:var(--mute);
+  margin-bottom:3rem;
+}
+
+footer .label{ margin:0; }
+
+@media (max-width: 640px){
+  .row > *{ max-width:none; }
+  .label{ margin-bottom:1.8em; }
+}

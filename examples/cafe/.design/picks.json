@@ -1,8 +1,12 @@
-{"picks":[
- {"role":"骨格","id":"l134","src":"LAPA","name":"Les Ensembliers",
-  "site":"https://www.lapa.ninja/post/ensembliers/","thumb":"https://cdn.lapa.ninja/assets/images/2x/ensembliers-thumb.webp",
-  "by":"ai","reason":"見出し下の大きな空白と、中央からずらした写真の周りに極小キャプスを散らす配置"},
- {"role":"色","id":"l162","src":"LAPA","name":"Ceremony Coffee Roasters",
-  "site":"https://www.lapa.ninja/post/ceremony-coffee/","thumb":"https://cdn.lapa.ninja/assets/images/2x/Ceremony-Coffee-Roasters-thumb.webp",
-  "by":"ai","reason":"生成り地にセクションごと淡い一色の面。ピーチやセージを素材の色から取っている"}
-]}
+{
+ "picks": [
+  {
+   "role": "骨格",
+   "id": "l162",
+   "src": "LAPA",
+   "name": "Ceremony Coffee Roasters",
+   "site": "https://www.lapa.ninja/post/ceremony-coffee/",
+   "thumb": "https://cdn.lapa.ninja/assets/images/2x/Ceremony-Coffee-Roasters-thumb.webp"
+  }
+ ]
+}

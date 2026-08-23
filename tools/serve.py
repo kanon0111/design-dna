@@ -49,6 +49,12 @@ class Handler(SimpleHTTPRequestHandler):
         if clean.startswith("/gen/"):
             rel = clean[len("/gen/"):].replace("/", os.sep)
             return os.path.join(paths.gen_dir(), rel)
+        if clean.startswith("/project/"):
+            # 適用先の現物。生成案と見比べるために出す。
+            rel = clean[len("/project/"):]
+            if any(seg.startswith(".") for seg in rel.split("/")):
+                return os.path.join(paths.project_root(), "__denied__")
+            return os.path.join(paths.project_root(), rel.replace("/", os.sep))
         return super().translate_path(path)
 
     # ---- 返し方 ----
@@ -80,6 +86,13 @@ class Handler(SimpleHTTPRequestHandler):
             q = self.path.split("?", 1)[1] if "?" in self.path else ""
             name = dict(kv.split("=", 1) for kv in q.split("&") if "=" in kv).get("name", "")
             return self._json(200, jobs.status(name))
+        if route == "/api/baseline":
+            # 比較したい既存物（現行サイト、過去の案）をプロジェクト側が宣言する
+            f = paths.p("baseline.json")
+            if os.path.exists(f):
+                with open(f, encoding="utf-8") as fh:
+                    return self._json(200, json.load(fh))
+            return self._json(200, {})
         if route == "/api/brief":
             # /design-dna:start がプロジェクトを読んで書いた下書き
             f = paths.p("brief.md")

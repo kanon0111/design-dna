@@ -45,6 +45,10 @@ figcaption{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bot
   background:none;color:#3ddc84;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
 .pick:hover,.pick.on{background:#3ddc84;color:#0b0b0c}
 #done{max-width:1600px;margin:18px auto 0;font-size:12.5px;color:#3ddc84;min-height:1.4em}
+#base{max-width:1600px;margin:44px auto 0;padding-top:26px;border-top:1px solid #2a2e36}
+#base h2{margin:0;font-size:14px;font-weight:600;color:#b8bec9}
+#base p{margin:6px 0 18px;font-size:12px;color:#878d99}
+#base .viewport{height:400px}
 #empty{max-width:1600px;margin:0 auto;color:#878d99;font-size:13px;line-height:1.9}
 footer{max-width:1600px;margin:30px auto 0;padding-top:18px;border-top:1px solid #2a2e36;
   color:#878d99;font-size:12px}
@@ -67,6 +71,12 @@ footer{max-width:1600px;margin:30px auto 0;padding-top:18px;border-top:1px solid
 <div class="grid" id="grid"></div>
 <p id="empty"></p>
 <p id="done"></p>
+
+<section id="base" style="display:none">
+  <h2 id="baseTitle"></h2>
+  <p id="baseNote"></p>
+  <div class="grid" id="baseGrid"></div>
+</section>
 
 <footer>選別画面に戻る: <a href="picker.html">picker.html</a></footer>
 
@@ -136,7 +146,26 @@ async function boot(){
 
   document.getElementById("empty").textContent = VARIANTS.length
     ? "" : "まだ案がありません。picker.html で参照を選び、「決定」を押してください。";
+
+  await renderBaseline();
   setW(1280);
+}
+
+/* 比較したい既存物。プロジェクトが .design/baseline.json で宣言する。
+   「参照も軸も使わずに作ったもの」と並べないと、効いているのか分からない。 */
+async function renderBaseline(){
+  const b = await get("/api/baseline", {});
+  if(!b || !(b.items || []).length) return;
+  document.getElementById("baseTitle").textContent = b.label || "比較対象";
+  document.getElementById("baseNote").textContent = b.note || "";
+  document.getElementById("baseGrid").style.setProperty("--cols", Math.min(b.items.length, 3));
+  document.getElementById("baseGrid").innerHTML = b.items.map(it =>
+    '<figure>' +
+      '<figcaption><span class="name">' + esc(it.label || it.id) + '</span>' +
+      '<a class="open" href="' + esc(it.path) + '" target="_blank" rel="noopener">開く ↗</a></figcaption>' +
+      '<div class="viewport"><iframe src="' + esc(it.path) + '" title="' + esc(it.label || it.id) + '" loading="lazy"></iframe></div>' +
+    '</figure>').join("");
+  document.getElementById("base").style.display = "block";
 }
 
 async function decide(btn){

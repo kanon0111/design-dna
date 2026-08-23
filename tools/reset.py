@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths
 
 STATE = ["picks.json", "request.json", "decision.json", "assist.json"]
+DERIVED = ["axis-values.md"]
 
 NOTES = """# 参照メモ
 
@@ -37,6 +38,9 @@ DNA を変えたいときは自由度ではなく ref を足して再抽出す�
 > **DNA に軸の値を書かないこと**（`axes.md` ルール4）。
 > ここに書いたものは自由度で永久に動かなくなる。方針だけを書き、
 > 「左寄せ」「ダーク」のような具体値は軸に置く。
+
+軸の**値**（左寄せ／ダーク／疎 など）はここではなく `axis-values.md` に置く。
+「固定」はその値を再現することであって、触らないことではない。
 
 （未抽出。ref を選び、notes.md に ○× を入れたあとで生成する）
 """
@@ -74,7 +78,7 @@ def main():
         out.flush(); return
 
     done = []
-    for name in STATE:
+    for name in STATE + DERIVED:
         f = paths.p(name)
         if os.path.exists(f):
             os.remove(f); done.append("削除  .design/%s" % name)

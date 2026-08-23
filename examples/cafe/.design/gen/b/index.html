@@ -8,18 +8,19 @@
 </head>
 <body>
 
-  <header class="band band--mist">
-    <div class="inner">
-      <p class="label">Jingumae &mdash; Tokyo</p>
-      <h1>Cafe Little&nbsp;Leaf</h1>
-      <p class="tagline">小さな葉っぱのような、ひと休みを。</p>
-    </div>
-  </header>
+  <div class="sheet">
 
-  <main>
+    <header class="masthead">
+      <div class="masthead__text">
+        <p class="label">Jingumae, Tokyo</p>
+        <h1>Cafe Little&nbsp;Leaf</h1>
+        <p class="tagline">小さな葉っぱのような、ひと休みを。</p>
+      </div>
+      <div class="masthead__field" role="img" aria-label="浅煎りの豆"></div>
+    </header>
 
-    <section class="band band--sage">
-      <div class="inner">
+    <section class="band band--hours">
+      <div class="band__inner">
         <p class="label">Hours</p>
         <h2>営業時間</h2>
         <dl>
@@ -30,44 +31,51 @@
       </div>
     </section>
 
-    <section class="band band--peach">
-      <div class="inner">
-        <p class="label">Selected</p>
+    <section class="band band--menu">
+      <div class="band__inner">
+        <p class="label">Menu</p>
         <h2>おすすめメニュー</h2>
         <ul>
           <li>
-            <div class="swatch swatch--blend" aria-hidden="true"></div>
-            <h3>リーフブレンド</h3>
-            <p>浅煎りの豆を使った、すっきり飲みやすい看板コーヒー。</p>
+            <div class="item__field field--roast" role="img" aria-label="浅煎りのコーヒー"></div>
+            <div class="item__text">
+              <h3>リーフブレンド</h3>
+              <p>浅煎りの豆を使った、すっきり飲みやすい看板コーヒー。</p>
+            </div>
           </li>
           <li>
-            <div class="swatch swatch--tart" aria-hidden="true"></div>
-            <h3>季節のフルーツタルト</h3>
-            <p>その日仕入れた果物をたっぷりのせた、日替わりのタルト。</p>
+            <div class="item__field field--fruit" role="img" aria-label="季節の果物"></div>
+            <div class="item__text">
+              <h3>季節のフルーツタルト</h3>
+              <p>その日仕入れた果物をたっぷりのせた、日替わりのタルト。</p>
+            </div>
           </li>
           <li>
-            <div class="swatch swatch--soda" aria-hidden="true"></div>
-            <h3>自家製レモンソーダ</h3>
-            <p>はちみつ漬けレモンを炭酸で割った、暑い日のおすすめ。</p>
+            <div class="item__field field--lemon" role="img" aria-label="レモンと炭酸"></div>
+            <div class="item__text">
+              <h3>自家製レモンソーダ</h3>
+              <p>はちみつ漬けレモンを炭酸で割った、暑い日のおすすめ。</p>
+            </div>
           </li>
         </ul>
       </div>
     </section>
 
-    <section class="band band--roast">
-      <div class="inner">
+    <section class="band band--reserve">
+      <div class="band__inner">
+        <p class="label">Reserve</p>
         <button type="button">予約する</button>
       </div>
     </section>
 
-  </main>
+    <footer class="band band--foot">
+      <div class="band__inner">
+        <p class="addr">〒150-0001 東京都渋谷区神宮前1-2-3 リトルリーフビル 1F</p>
+        <p class="label">&copy; 2026 Cafe Little Leaf</p>
+      </div>
+    </footer>
 
-  <footer class="band band--paper">
-    <div class="inner">
-      <p class="addr">〒150-0001 東京都渋谷区神宮前1-2-3 リトルリーフビル 1F</p>
-      <p class="label">&copy; 2026 Cafe Little Leaf</p>
-    </div>
-  </footer>
+  </div>
 
 </body>
 </html>
