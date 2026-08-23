@@ -7,7 +7,7 @@
 プロンプトはプラグイン側（参照・軸）とプロジェクト側（.design/）の
 両方を触るので、--add-dir に両方を渡す。
 """
-import os, shutil, subprocess, sys, threading, time
+import json, os, shutil, subprocess, sys, threading, time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths
@@ -75,6 +75,32 @@ def _where():
             f"書き出し先             : {paths.design_dir()}\n")
 
 
+def _ids(path, key="picks"):
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return [p.get("id") for p in (json.load(fh).get(key) or [])]
+    except Exception:
+        return None
+
+
+def dna_state():
+    """DNA が今の参照から作られたものかを判定する。
+
+    「未抽出なら抽出する」だけだと、参照を選び直しても古い DNA が残り、
+    前の参照の読みで生成されてしまう。判定は Python 側でやる
+    （AI に自己申告させると静かに間違う）。迷ったら取り直す側に倒す。
+    """
+    if not os.path.exists(paths.p("dna.md")):
+        return "未抽出", []
+    now = _ids(paths.p("picks.json")) or []
+    was = _ids(paths.p("dna-source.json"))
+    if was is None:
+        return "由来不明", now
+    if was != now:
+        return "古い", now
+    return "最新", now
+
+
 def assist_prompt(brief):
     return f"""あなたはデザイン参照システムを操作している。
 
@@ -131,6 +157,12 @@ Awwwards=json の2番目の要素。
 """
 
 
+def _dna_line():
+    state, ids = dna_state()
+    who = "／".join(ids) if ids else "なし"
+    return f"{state}（いまの参照: {who}）"
+
+
 def generate_prompt():
     return f"""あなたはデザイン参照システムを操作している。
 
@@ -141,7 +173,18 @@ def generate_prompt():
 
 ## 手順
 1. 参照プールの `axes.md` を読む。軸と重み、そして**ルール4**（DNAに軸の値を書かない）を守る。
-2. `.design/dna.md` を読む。未抽出なら、picks の ref の実物画像を見て抽出し、書く。
+2. DNA の状態は **{_dna_line()}**。
+
+   「最新」以外なら、**実物画像を見て抽出し直す**（前回の読みを使い回さない）。
+   抽出したら `.design/dna.md` と一緒に `.design/dna-source.json` を必ず書く。
+
+   ```json
+   {{"picks": ["l162"]}}
+   ```
+
+   これが今の `picks.json` と一致していることで「最新」と判定される。書き忘れると
+   毎回取り直しになる（安全側に倒してある）。
+   画像の場所:
    - Godly の ref は参照プールの `cache/images/godly/<slug>/desktop-full.webp` にフルページがある。
      縦に長いので PIL で4分割して `.design/_slices/` に出してから Read で見る。
    - Lapa / Awwwards の ref は `cache/thumbs/<id>.img` のみ

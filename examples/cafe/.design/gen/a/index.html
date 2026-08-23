@@ -8,76 +8,68 @@
 </head>
 <body>
 
-  <div class="sheet">
+  <main class="grid">
 
-    <div class="strip">
-      <p class="label">Jingumae, Tokyo</p>
-      <p class="label">Est. 2026</p>
-    </div>
+    <section class="plate p-name">
+      <h1>Cafe<br>Little<br>Leaf</h1>
+    </section>
 
-    <header class="masthead">
-      <div class="masthead__text">
-        <p class="label">Light Roast &amp; Baked Daily</p>
-        <h1>Cafe Little&nbsp;Leaf</h1>
-        <p class="tagline">小さな葉っぱのような、ひと休みを。</p>
-      </div>
-      <div class="masthead__field field--sage" role="img" aria-label="浅煎りの豆"></div>
-    </header>
-
-    <section class="hours">
-      <p class="label">Hours</p>
+    <section class="plate p-hours">
       <h2>営業時間</h2>
-      <dl>
-        <div><dt>平日</dt><dd>8:00 &ndash; 19:00</dd></div>
-        <div><dt>土日祝</dt><dd>9:00 &ndash; 18:00</dd></div>
-        <div><dt>定休日</dt><dd>水曜日</dd></div>
-      </dl>
-    </section>
-
-    <section class="menu">
-      <div class="menu__head">
-        <p class="label">Menu</p>
-        <h2>おすすめメニュー</h2>
+      <div class="clockset">
+        <p class="clock">8:00–19:00</p>
+        <p class="when">平日</p>
       </div>
-      <ul>
-        <li>
-          <div class="card__field field--roast" role="img" aria-label="浅煎りのコーヒー"></div>
-          <div class="card__text">
-            <p class="label">Coffee</p>
-            <h3>リーフブレンド</h3>
-            <p>浅煎りの豆を使った、すっきり飲みやすい看板コーヒー。</p>
-          </div>
-        </li>
-        <li>
-          <div class="card__field field--peach" role="img" aria-label="季節の果物"></div>
-          <div class="card__text">
-            <p class="label">Baked</p>
-            <h3>季節のフルーツタルト</h3>
-            <p>その日仕入れた果物をたっぷりのせた、日替わりのタルト。</p>
-          </div>
-        </li>
-        <li>
-          <div class="card__field field--lemon" role="img" aria-label="レモンと炭酸"></div>
-          <div class="card__text">
-            <p class="label">Soda</p>
-            <h3>自家製レモンソーダ</h3>
-            <p>はちみつ漬けレモンを炭酸で割った、暑い日のおすすめ。</p>
-          </div>
-        </li>
-      </ul>
+      <div class="clockset">
+        <p class="clock">9:00–18:00</p>
+        <p class="when">土日祝</p>
+      </div>
+      <p class="when closed">定休日：水曜日</p>
     </section>
 
-    <section class="reserve">
-      <p class="label">Reserve</p>
+    <section class="plate p-tag">
+      <p class="tagline">小さな葉っぱのような、<br>ひと休みを。</p>
+    </section>
+
+    <section class="plate p-head">
+      <h2>おすすめメニュー</h2>
+    </section>
+
+    <article class="plate p-m1">
+      <div class="tone tone-leaf"></div>
+      <div class="pad">
+        <h3>リーフブレンド</h3>
+        <p>浅煎りの豆を使った、すっきり飲みやすい看板コーヒー。</p>
+      </div>
+    </article>
+
+    <article class="plate p-m2">
+      <div class="tone tone-fruit"></div>
+      <div class="pad">
+        <h3>季節のフルーツタルト</h3>
+        <p>その日仕入れた果物をたっぷりのせた、日替わりのタルト。</p>
+      </div>
+    </article>
+
+    <article class="plate p-m3">
+      <div class="tone tone-lemon"></div>
+      <div class="pad">
+        <h3>自家製レモンソーダ</h3>
+        <p>はちみつ漬けレモンを炭酸で割った、暑い日のおすすめ。</p>
+      </div>
+    </article>
+
+    <section class="plate p-book">
       <button type="button">予約する</button>
     </section>
 
-    <footer>
-      <p class="addr">〒150-0001 東京都渋谷区神宮前1-2-3 リトルリーフビル 1F</p>
-      <p class="label">&copy; 2026 Cafe Little Leaf</p>
-    </footer>
+    <section class="plate p-addr">
+      <p class="mark">CAFE LITTLE LEAF</p>
+      <p>〒150-0001 東京都渋谷区神宮前1-2-3<br>リトルリーフビル 1F</p>
+      <p class="copy">&copy; 2026 Cafe Little Leaf</p>
+    </section>
 
-  </div>
+  </main>
 
 </body>
 </html>

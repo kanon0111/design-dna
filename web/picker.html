@@ -123,6 +123,9 @@
   .axes{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px}
   .ax{font-size:12px;padding:4px 11px;border-radius:0;border:1px solid var(--soft);color:var(--dim)}
   .ax.free{background:var(--line);border-color:var(--line);color:var(--bg)}
+  .ax.slip{border-color:var(--pick);border-style:dashed;color:var(--pick)}
+  .fnum.slip{color:var(--pick)}
+  #panel .hint .warn{color:var(--pick)}
   select{font:inherit;font-family:var(--mincho);font-size:18px;padding:6px 2px;border-radius:0;
     border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg)}
   button.go{background:var(--line);border:0;color:var(--bg);font-weight:500;
@@ -413,7 +416,7 @@ function paint(){
 }
 function clearAll(){ sel=[]; sync(); }
 
-function sync(){ renderSlots(); renderProposal(); paint(); save(); }
+function sync(){ renderSlots(); renderProposal(); paint(); renderFreedom(); save(); }
 
 /* ---------- 保存 ---------- */
 let timer=null;
@@ -468,6 +471,7 @@ async function load(){
     setStatus("サーバ未接続・ローカル保存のみ","ng");
   }
   renderCats(); renderSlots(); renderProposal();
+  renderFreedom();          // 読み取れない軸は軸の出典で決まるので、読み込み後に出し直す
   loadBrief();
 }
 /* ---------- AIに選んでもらう ---------- */
@@ -634,6 +638,14 @@ function rejectAI(){
 /* ---------- 自由度 ---------- */
 // axes.md と同じ重み。軽い軸から順に、重み合計が N を超えない範囲まで解放する。
 const AXES=[["装飾量",2],["階層の跳ね",4],["コントラスト",9],["密度",15],["地の明度",20],["主役",22],["構図",28]];
+
+// 手元の素材で読み取れない軸（axes.md「素材と軸の対応」）。
+// 読み取れない軸は固定しても再現できないので、実質は解放されているのと同じ。
+const UNREADABLE={LAPA:["構図","密度"],AWWWARDS:["構図","密度"],GODLY:[]};
+function unreadable(){
+  const it = sel.length ? byId[sel[0].id] : null;
+  return it ? (UNREADABLE[it.src] || []) : [];
+}
 function released(n){
   const out=[]; let acc=0;
   for(const [name,wt] of AXES){ acc+=wt; if(acc<=n) out.push(name); else break; }
@@ -643,20 +655,40 @@ function renderFreedom(){
   const n=+document.getElementById("freedom").value;
   document.getElementById("fv").textContent=n;
   const free=released(n);
-  document.getElementById("axes").innerHTML=AXES.map(([name])=>
-    '<span class="ax'+(free.includes(name)?' free':'')+'">'+name+'</span>').join("");
+  const un=unreadable();
   const fixed=AXES.map(a=>a[0]).filter(a=>!free.includes(a));
-  document.getElementById("fhint").innerHTML=
-    (free.length?'<b>変わる</b>: '+free.join("・"):'<b>変わらない</b>')+
-    '<br>'+(fixed.length?'<b>そのまま</b>: '+fixed.join("・"):'すべて変わる');
+  // 固定のつもりでも、参照から読み取れない軸は再現できない＝実質は解放
+  const slip=fixed.filter(a=>un.includes(a));
+  const slipW=AXES.filter(a=>slip.includes(a[0])).reduce((s,a)=>s+a[1],0);
+  const real=Math.min(100,n+slipW);
+
+  document.getElementById("axes").innerHTML=AXES.map(([name])=>
+    '<span class="ax'+(free.includes(name)?' free':(slip.includes(name)?' slip':''))+'">'+
+    name+(slip.includes(name)?' ?':'')+'</span>').join("");
+
+  const lines=[];
+  lines.push(free.length?'<b>変わる</b>: '+free.join("・"):'<b>変わらない</b>');
+  const held=fixed.filter(a=>!slip.includes(a));
+  lines.push(held.length?'<b>そのまま</b>: '+held.join("・"):'すべて変わる');
+  if(slip.length){
+    lines.push('<b class="warn">読み取れない</b>: '+slip.join("・")+
+      ' — 参照から値が取れないので固定できません。<b>実質 '+real+'%</b>');
+  }
+  document.getElementById("fhint").innerHTML=lines.join('<br>');
+  document.getElementById("fv").className="fnum"+(slipW?" slip":"");
 }
 document.getElementById("freedom").oninput=renderFreedom;
 
 async function decide(){
   if(!sel.length){ msg("まず1枚選んでください","" ); return; }
   const n=+document.getElementById("freedom").value;
+  const un=unreadable();
+  const fixedNow=AXES.map(a=>a[0]).filter(a=>!released(n).includes(a));
+  const slip=fixedNow.filter(a=>un.includes(a));
   const body={
     freedom:n, released:released(n),
+    unreadable:slip,
+    effectiveFreedom:Math.min(100,n+AXES.filter(a=>slip.includes(a[0])).reduce((s,a)=>s+a[1],0)),
     variants:+document.getElementById("variants").value,
     target:document.getElementById("target").value,
     picks:sel.filter(x=>byId[x.id]).map(x=>({id:x.id,name:byId[x.id].name,site:byId[x.id].site,hint:x.hint||""}))
