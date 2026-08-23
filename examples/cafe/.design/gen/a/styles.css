@@ -1,193 +1,119 @@
-/* 案 a — 自由度 50%（予算 50 / 使用 48）
+/* 案 a  ─ 自由度30%（予算29を消化）
  *
- * 解放した軸: 地の明度20 ＋ 密度15 ＋ コントラスト9 ＋ 階層の跳ね4 ＝ 48
- *   地の明度  → ダーク基調（参照は「ライト基調」。反転させる）
- *   密度      → 密（面を隙間なく突き合わせ、面の中も詰める）
- *   コントラスト → 高（パンチ。ミルクの面1枚を暗い面の中に打ち込む）
- *   階層の跳ね → 極端（特大・中・極小の3段だけ。中間の級を作らない）
- *
+ * 解放した軸: 地の明度(20) → ダーク基調 / コントラスト(9) → 高（パンチ）
  * 固定した軸（= l162 の値を再現する。触らないのではない）:
- *   主役      → 色面。セクションごとに違う一色の面が画面を仕切る状態を能動的に作る
- *   装飾量    → 無。罫線・影・角丸・グラデーションを1つも使わない。
- *               面の境界は色が変わる場所そのものだけで作る
+ *   主役     = 色面   … セクションごとに全幅の面を敷き、面が品目そのものを表す
+ *   密度     = 疎     … 面の8割を空ける。1面1要素まで
+ *   階層の跳ね = 中    … 見出しと本文で約3倍。ラベルは落としすぎない
+ *   装飾量   = 無     … 罫線・影・角丸・グラデーション・境界線を1本も引かない
+ * 読み取れなかった軸: 構図 → 中央対称 を選択（固定できないので案ごとに選ぶ）
  *
- * 固定できなかった軸:
- *   構図      → 参照から読み取れず（axis-values.md）。案ごとに選ぶ。a は「崩しグリッド」
+ * DNA: 書体2系統 / 強調は級数と余白だけ / 色は素材由来の面としてのみ /
+ *      境界は色の切り替わり / 矩形のまま / 字間はラテン文字だけ / CTA を塗らない
  */
 
 :root {
-  --ground:  #14110d;  /* 地 */
-  --roast:   #241c15;  /* 焙煎 */
-  --milk:    #e9e2d4;  /* ミルク（唯一の明るい面） */
-  --leaf:    #1e2a1d;  /* 葉 */
-  --fruit:   #3a2318;  /* 果実 */
-  --lemon:   #33301a;  /* 檸檬 */
-  --shade:   #2b241c;
-  --ink:     #f4efe3;
-  --ink-dim: #a99f8d;
-  --ink-rev: #17130f;
+  /* l162 の面の色を素材のまま暗く落としたもの（実測 #ecf0ef / #e9eeee / #fbe9d8 / #cfddbb） */
+  --ink:      #0d110e;  /* 生成りの反転 */
+  --forest:   #1e2a20;  /* セージを落とした面 */
+  --mist:     #16212a;  /* 淡青灰を落とした面 */
+  --espresso: #2b2018;  /* ピーチを落とした面 */
+  --olive:    #23281c;
+  --sage:     #cfddbb;  /* ここだけ ref の値そのまま。ページ唯一の明い面 */
+  --bone:     #f7f5f1;
 
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Hiragino Mincho ProN", "Yu Mincho", YuMincho, "Noto Serif JP", serif;
-  --sans:  "Hiragino Sans", "Yu Gothic", YuGothic, "Noto Sans JP", "Segoe UI", sans-serif;
-
-  /* 階層＝極端: 8.6rem / 2.4rem / 0.72rem。この3段しか使わない */
-  --t-mark: clamp(3rem, 8.6vw, 8.6rem);
-  --t-mid:  clamp(1.5rem, 2.9vw, 2.4rem);
-  --t-min:  0.72rem;
+  --serif: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  --sans:  "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
 }
 
-* { box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  margin: 0;
-  background: var(--ground);
-  color: var(--ink);
+  background: var(--ink);
+  color: var(--bone);
   font-family: var(--sans);
-  font-size: var(--t-min);
-  line-height: 1.55;
+  font-size: 15px;
+  line-height: 2;
   -webkit-font-smoothing: antialiased;
 }
 
-/* 崩しグリッド: 4列を等分せず、面ごとに span を変えて敷き詰める。gap は 0（密） */
-.grid {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr 1fr 1.05fr;
-  grid-template-rows:
-    minmax(7rem, auto)
-    minmax(5rem, auto)
-    minmax(5.5rem, auto)
-    minmax(10rem, auto)
-    minmax(6.5rem, auto);
-  grid-template-areas:
-    "name name name hours"
-    "name name name hours"
-    "tag  tag  head hours"
-    "m1   m1   m2   m3"
-    "m1   m1   book addr";
-  gap: 0;
-  min-height: 100vh;
+/* ── 面 ────────────────────────────────────────────
+   主役=色面。面は全幅で、切れ目は色が変わる場所そのもの（DNA 4）。
+   密度=疎。上下に大きく空け、1つの面には1つのことしか置かない。 */
+.plane {
+  padding: 11rem 2rem;
+}
+.inner {
+  max-width: 24em;      /* 和文なので em。ch は使わない */
+  margin: 0 auto;
+  text-align: center;   /* 構図=中央対称 */
 }
 
-.plate {
-  padding: 1.1rem 1.2rem;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
+.plane--title    { background: var(--ink);      padding-top: 15rem; padding-bottom: 15rem; }
+.plane--menuhead { background: var(--forest);   padding: 5rem 2rem; }
+.plane--bean     { background: var(--mist); }
+.plane--tart     { background: var(--espresso); }
+.plane--soda     { background: var(--olive); }
+.plane--book     { background: var(--sage);     padding: 9rem 2rem; }
+.plane--hours    { background: var(--ink); }
+.plane--foot     { background: var(--ink);      padding: 7rem 2rem 9rem; }
 
-.p-name  { grid-area: name;  background: var(--roast); justify-content: flex-end; padding-bottom: 0.9rem; }
-.p-hours { grid-area: hours; background: var(--milk); color: var(--ink-rev); justify-content: flex-start; }
-.p-tag   { grid-area: tag;   background: var(--ground); justify-content: flex-end; }
-.p-head  { grid-area: head;  background: var(--shade); justify-content: flex-end; }
-.p-m1    { grid-area: m1;    background: var(--leaf);  padding: 0; }
-.p-m2    { grid-area: m2;    background: var(--fruit); padding: 0; }
-.p-m3    { grid-area: m3;    background: var(--lemon); padding: 0; }
-.p-book  { grid-area: book;  background: var(--ink-rev); justify-content: flex-end; }
-.p-addr  { grid-area: addr;  background: #1b1712; justify-content: flex-end; }
-
-/* 特大の段 —— 店名だけ */
-.p-name h1 {
-  margin: 0;
+/* ── 文字 ──────────────────────────────────────────
+   コントラスト=高。地と文字を骨（#f7f5f1）と墨（#0d110e）で突き放す。
+   灰色の中間調を1つも置かない。 */
+h1 {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: var(--t-mark);
-  line-height: 0.82;
-  letter-spacing: -0.015em;
+  font-size: clamp(2.6rem, 6vw, 3.4rem);  /* 本文の約3.4倍 = 階層は中 */
+  line-height: 1.35;
+  letter-spacing: .01em;
+  color: var(--bone);
 }
 
-/* 中の段 —— 時刻とメニュー名だけ */
-.clock,
-.pad h3 {
-  margin: 0;
+.lede {
+  margin-top: 2.5rem;
+  font-size: .95rem;
+  color: var(--bone);
+}
+
+/* ラベルも同じ骨色。差は級数と字間だけで作る（DNA 2） */
+.mark {
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: .8rem;
+  letter-spacing: .02em;
+  color: var(--bone);
+}
+
+.plane--hours .mark { margin-bottom: 3rem; }
+
+h3 {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: var(--t-mid);
-  line-height: 1.05;
-  letter-spacing: -0.01em;
+  font-size: 2rem;
+  line-height: 1.5;
+  color: var(--bone);
 }
 
-/* 極小の段 —— それ以外すべて。見出しも本文もラベルもここに落とす */
-h2, h3, p { margin: 0; }
-
-.p-hours h2,
-.p-head h2 {
-  font-size: var(--t-min);
-  font-weight: 400;
-  line-height: 1.4;
+.plane--dish p {
+  margin-top: 2rem;
+  font-size: .9rem;
+  color: var(--bone);
 }
 
-.p-hours h2 { margin-bottom: 0.9rem; }
-.p-head h2  { color: var(--ink-dim); }
+.plane--hours p { font-size: 1rem; }
 
-.clockset { margin-bottom: 0.75rem; }
-.when { font-size: var(--t-min); color: #6d6659; }
-.closed { margin-top: 0.2rem; }
-
-.tagline {
-  font-size: var(--t-min);
-  line-height: 1.9;
-  max-width: 14em;   /* 和文なので em で取る */
-  color: var(--ink-dim);
-}
-
-/* 面の中の素材色。矩形のまま、面の端まで詰める（密） */
-.tone { width: 100%; }
-.p-m1 .tone { height: 8.5rem; }
-.p-m2 .tone,
-.p-m3 .tone { height: 4.5rem; }
-
-.tone-leaf  { background: #3c5236; }
-.tone-fruit { background: #6a3b26; }
-.tone-lemon { background: #5d5626; }
-
-.pad {
-  padding: 0.9rem 1.1rem 1.1rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
-
-.pad p {
-  margin-top: 0.55rem;
-  max-width: 15em;
-  color: var(--ink-dim);
-  line-height: 1.75;
-}
-
-/* CTA は塗らない。ラベルの階級のまま置く（DNA） */
-.p-book button {
-  appearance: none;
-  -webkit-appearance: none;
+/* CTA は塗らない（DNA 7）。面が反転していることが強調のすべて */
+button {
   background: none;
   border: 0;
   padding: 0;
-  margin: 0;
-  font: inherit;
-  font-size: var(--t-min);
+  font-family: var(--sans);
+  font-size: 1rem;
+  letter-spacing: .04em;
   color: var(--ink);
-  text-align: left;
   cursor: pointer;
 }
 
-/* 字間の芸はラテン文字のラベルにだけ（DNA） */
-.p-addr .mark {
-  font-size: 0.62rem;
-  letter-spacing: 0.24em;
-  color: #6d6659;
-  margin-bottom: 0.7rem;
-}
-
-.p-addr p { line-height: 1.75; color: var(--ink-dim); }
-.p-addr .copy { margin-top: 0.7rem; color: #55503f; }
-
-@media (max-width: 860px) {
-  .grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: none;
-    grid-template-areas: none;
-  }
-  .plate { grid-area: auto; }
-  .p-name { min-height: 46vh; }
-  .p-hours { padding-top: 1.6rem; padding-bottom: 1.6rem; }
-}
+.plane--foot p    { font-size: .82rem; }
+.plane--foot .copy { margin-top: 1.6rem; }

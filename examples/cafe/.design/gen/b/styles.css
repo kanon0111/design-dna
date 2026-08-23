@@ -1,162 +1,145 @@
-/* 案 b — 自由度 50%（予算 50 / 使用 43）
+/* 案 b  ─ 自由度30%（予算28を消化）
  *
- * 解放した軸: 主役22 ＋ 密度15 ＋ 階層の跳ね4 ＋ 装飾量2 ＝ 43
- *   主役      → 余白（参照は「色面」。面で仕切るのをやめ、空きが画面を持つ）
- *   密度      → 疎（塊と塊の間を極端に空ける）
- *   階層の跳ね → フラット（店名・見出し・本文の級数差をほぼ無くし、差は空きで作る）
- *   装飾量    → 罫線（毛罫。面の境界ではなく、区切りの印としてだけ引く）
- *
+ * 解放した軸: 主役(22) → タイポ / 階層の跳ね(4) → 極端 / 装飾量(2) → テクスチャ
  * 固定した軸（= l162 の値を再現する。触らないのではない）:
- *   地の明度  → ライト基調。地は生成り。暗い面を1枚も置かない
- *   コントラスト → 低（トーナル）。字を墨に落とさず、素材色も彩度を上げない。
- *                 最も濃い字と地の差を意図的に狭く保つ
+ *   地の明度   = ライト基調 … 地は生成り #fdfbf9。暗い面を1枚も置かない
+ *   密度       = 疎         … 塊と塊のあいだを大きく空け、1塊1事項に留める
+ *   コントラスト = 低（トーナル）… 黒も白も使わない。文字は灰、面は淡色どうしの差だけ
+ * 読み取れなかった軸: 構図 → 対角 を選択（固定できないので案ごとに選ぶ）
  *
- * 固定できなかった軸:
- *   構図      → 参照から読み取れず（axis-values.md）。案ごとに選ぶ。b は「中央対称」
+ * DNA: 書体2系統 / 強調は級数と余白だけ / 色は素材由来の面としてのみ /
+ *      境界は色の切り替わり（テクスチャは装飾であって境界ではない） /
+ *      矩形のまま / 字間はラテン文字だけ / CTA を塗らない
  */
 
 :root {
-  --ground:  #fbf8f2;  /* 生成り */
-  --ink:     #6b6459;  /* 墨には落とさない（低コントラスト） */
-  --ink-up:  #55503f;  /* 上の段。これでも黒ではない */
-  --ink-dim: #a49b8b;
-  --rule:    #e4ddce;  /* 毛罫 */
+  /* l162 からの実測値をそのまま使う（地の明度は固定なので再現する） */
+  --ground: #fdfbf9;  /* 生成り */
+  --mist:   #ecf0ef;
+  --peach:  #fbe9d8;
+  --sage:   #cfddbb;
 
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Hiragino Mincho ProN", "Yu Mincho", YuMincho, "Noto Serif JP", serif;
-  --sans:  "Hiragino Sans", "Yu Gothic", YuGothic, "Noto Sans JP", "Segoe UI", sans-serif;
+  /* コントラスト=低。最も濃い文字でも #4a504a 止まりで、黒は置かない */
+  --text:  #6b706a;
+  --head:  #4a504a;
+  --faint: #8b908a;
 
-  /* 階層＝フラット: 1.35rem 〜 0.9rem。この幅から出ない */
-  --t-up:   1.35rem;
-  --t-mid:  1.1rem;
-  --t-body: 0.9rem;
+  --serif: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  --sans:  "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
 }
 
-* { box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* 装飾量=テクスチャ。地の全面に細かい粒を敷く。
+   境界を作る役には使わない（DNA 4）ので、面の切れ目に合わせて変化させない。 */
 body {
-  margin: 0;
-  background: var(--ground);
-  color: var(--ink);
+  background-color: var(--ground);
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(107, 112, 106, .085) 1px, transparent 0),
+    radial-gradient(circle at 4px 5px, rgba(107, 112, 106, .05) 1px, transparent 0);
+  background-size: 7px 7px, 11px 11px;
+  color: var(--text);
   font-family: var(--sans);
-  font-size: var(--t-body);
-  line-height: 1.9;
+  font-size: 13px;
+  line-height: 2.2;
   -webkit-font-smoothing: antialiased;
 }
 
-/* 中央対称。塊はすべて同じ幅の柱の上に載せ、左右に振らない */
-main {
-  max-width: 24em;      /* 和文なので em で取る */
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  text-align: center;
+/* ── 構図=対角 ────────────────────────────────────
+   5つの塊が、左下から右上へ段を上がるように寄っていく。 */
+.sheet {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  padding: 10rem 4vw 12rem;
+  row-gap: 14rem;          /* 密度=疎 */
 }
 
-section, footer { padding: 0; }
+.block   { min-width: 0; }
+.step1   { grid-column: 1 / 9;  }
+.step2   { grid-column: 2 / 11; }
+.step3   { grid-column: 4 / 12; }
+.step4   { grid-column: 7 / 13; }
+.step5   { grid-column: 8 / 13; }
 
-/* 疎: 空きが主役。塊と塊の間を画面1つ分近く空ける */
-.open   { padding: 11rem 0 9rem; }
-.menu   { padding: 9rem 0; }
-.hours  { padding: 9rem 0; }
-footer  { padding: 9rem 0 11rem; }
-
-hr {
-  border: 0;
-  height: 1px;
-  background: var(--rule);
-  width: 2.5rem;
-  margin: 0 auto;
-}
-
-h1, h2, h3, p { margin: 0; }
-
-.tagline {
+/* ── 主役=タイポ ──────────────────────────────────
+   面ではなく文字がページの物体。店名は版面の幅いっぱいを占める。
+   階層=極端。店名(約9.5倍) → 品名(約2.6倍) → 本文(1倍) → ラベル(0.72倍)。 */
+h1 {
   font-family: var(--serif);
-  font-size: var(--t-up);
   font-weight: 400;
-  line-height: 2.1;
-  color: var(--ink-up);
+  font-size: clamp(3.4rem, 11.5vw, 8.4rem);
+  line-height: 1.02;
+  letter-spacing: -.015em;   /* 字間の芸はラテン文字にだけ（DNA 6） */
+  color: var(--head);
 }
 
-/* 見出しも本文とほぼ同じ級。区別は空きで付ける（フラット） */
+.lede {
+  margin-top: 3.5rem;
+  max-width: 20em;           /* 和文なので em */
+  font-size: 1rem;
+}
+
 h2 {
   font-family: var(--sans);
-  font-size: var(--t-body);
   font-weight: 400;
-  color: var(--ink-dim);
-  margin-bottom: 6rem;
+  font-size: .72rem;
+  color: var(--faint);
+  margin-bottom: 5rem;
 }
 
-.menu article { margin-bottom: 8rem; }
-.menu article:last-child { margin-bottom: 0; }
+/* 品目もそれぞれ段を上げて、塊の中でも対角を保つ */
+.menu   { display: grid; row-gap: 6rem; }
+.item   { max-width: 30em; }
+.item:nth-child(2) { margin-left: 12%; }
+.item:nth-child(3) { margin-left: 24%; }
 
-/* 素材色。矩形のまま、彩度を上げずに置く */
-.tone {
-  width: 100%;
-  height: 6.5rem;
-  margin-bottom: 2.2rem;
-}
-
-.tone-leaf  { background: #dfe6d2; }
-.tone-fruit { background: #f6e7d8; }
-.tone-lemon { background: #efeacf; }
-
-.menu h3 {
+dt {
   font-family: var(--serif);
-  font-size: var(--t-mid);
   font-weight: 400;
-  line-height: 1.8;
-  color: var(--ink-up);
+  font-size: clamp(1.9rem, 3.6vw, 2.4rem);
+  line-height: 1.4;
+  color: var(--head);
 }
 
-.menu p {
-  margin: 1.1rem auto 0;
-  max-width: 17em;
+dd {
+  margin-top: 1.4rem;
+  max-width: 22em;
+  font-size: 1rem;
 }
 
-.hours p { line-height: 2.4; }
+/* 営業時間。淡い面を1枚だけ敷くが、文字より前に出ない大きさに留める */
+.step3 {
+  background: var(--mist);
+  padding: 5rem 4rem 5.5rem;
+}
+.hour {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  line-height: 2.1;
+  color: var(--head);
+}
 
-.book { margin-top: 5rem; }
-
-/* CTA は塗らない。ラベルの階級のまま置く（DNA） */
-.book button {
-  appearance: none;
-  -webkit-appearance: none;
+/* CTA は塗らない（DNA 7）。級数と余白だけで立たせる */
+.step4 {
+  background: var(--sage);
+  padding: 4.5rem 3rem;
+}
+button {
   background: none;
   border: 0;
   padding: 0;
-  margin: 0;
-  font: inherit;
-  color: var(--ink-up);
+  font-family: var(--serif);
+  font-size: 2.2rem;
+  line-height: 1.4;
+  color: var(--head);
   cursor: pointer;
 }
 
-/* 店名は最後に署名として置く。級数は上げない（フラット） */
-footer h1 {
-  font-family: var(--serif);
-  font-size: var(--t-up);
-  font-weight: 400;
-  line-height: 1.6;
-  color: var(--ink-up);
-}
+.step5 p    { font-size: .82rem; color: var(--faint); }
+.step5 .copy { margin-top: 1.4rem; }
 
-.place {
-  margin-top: 3.5rem;
-  line-height: 2.2;
-}
-
-/* 字間の芸はラテン文字にだけ（DNA） */
-.copy {
-  margin-top: 3.5rem;
-  font-size: 0.68rem;
-  letter-spacing: 0.22em;
-  color: var(--ink-dim);
-}
-
-@media (max-width: 600px) {
-  .open  { padding: 7rem 0 6rem; }
-  .menu,
-  .hours { padding: 6rem 0; }
-  footer { padding: 6rem 0 7rem; }
-  h2 { margin-bottom: 4rem; }
-  .menu article { margin-bottom: 5.5rem; }
+@media (max-width: 720px) {
+  .sheet { row-gap: 9rem; padding: 6rem 6vw 8rem; }
+  .step1, .step2, .step3, .step4, .step5 { grid-column: 1 / 13; }
+  .item:nth-child(2), .item:nth-child(3) { margin-left: 0; }
 }

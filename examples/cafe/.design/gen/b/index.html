@@ -8,55 +8,49 @@
 </head>
 <body>
 
-  <main>
+  <div class="sheet">
 
-    <section class="open">
-      <p class="tagline">小さな葉っぱのような、<br>ひと休みを。</p>
-    </section>
+    <!-- 左下から右上へ、5つの塊が段を上がっていく -->
+    <header class="block step1">
+      <h1>Cafe&nbsp;Little<br>Leaf</h1>
+      <p class="lede">小さな葉っぱのような、ひと休みを。</p>
+    </header>
 
-    <hr>
-
-    <section class="menu">
+    <section class="block step2">
       <h2>おすすめメニュー</h2>
-
-      <article>
-        <div class="tone tone-leaf"></div>
-        <h3>リーフブレンド</h3>
-        <p>浅煎りの豆を使った、すっきり飲みやすい看板コーヒー。</p>
-      </article>
-
-      <article>
-        <div class="tone tone-fruit"></div>
-        <h3>季節のフルーツタルト</h3>
-        <p>その日仕入れた果物をたっぷりのせた、日替わりのタルト。</p>
-      </article>
-
-      <article>
-        <div class="tone tone-lemon"></div>
-        <h3>自家製レモンソーダ</h3>
-        <p>はちみつ漬けレモンを炭酸で割った、暑い日のおすすめ。</p>
-      </article>
+      <dl class="menu">
+        <div class="item">
+          <dt>リーフブレンド</dt>
+          <dd>浅煎りの豆を使った、すっきり飲みやすい看板コーヒー。</dd>
+        </div>
+        <div class="item">
+          <dt>季節のフルーツタルト</dt>
+          <dd>その日仕入れた果物をたっぷりのせた、日替わりのタルト。</dd>
+        </div>
+        <div class="item">
+          <dt>自家製レモンソーダ</dt>
+          <dd>はちみつ漬けレモンを炭酸で割った、暑い日のおすすめ。</dd>
+        </div>
+      </dl>
     </section>
 
-    <hr>
-
-    <section class="hours">
+    <section class="block step3">
       <h2>営業時間</h2>
-      <p>平日 8:00 - 19:00</p>
-      <p>土日祝 9:00 - 18:00</p>
-      <p>定休日：水曜日</p>
-      <p class="book"><button type="button">予約する</button></p>
+      <p class="hour">平日 8:00 - 19:00</p>
+      <p class="hour">土日祝 9:00 - 18:00</p>
+      <p class="hour">定休日：水曜日</p>
     </section>
 
-    <hr>
+    <section class="block step4">
+      <button type="button">予約する</button>
+    </section>
 
-    <footer>
-      <h1>Cafe Little Leaf</h1>
-      <p class="place">〒150-0001 東京都渋谷区神宮前1-2-3<br>リトルリーフビル 1F</p>
+    <footer class="block step5">
+      <p>〒150-0001 東京都渋谷区神宮前1-2-3 リトルリーフビル 1F</p>
       <p class="copy">&copy; 2026 Cafe Little Leaf</p>
     </footer>
 
-  </main>
+  </div>
 
 </body>
 </html>

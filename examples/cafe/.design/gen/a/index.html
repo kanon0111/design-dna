@@ -8,68 +8,70 @@
 </head>
 <body>
 
-  <main class="grid">
+  <main>
 
-    <section class="plate p-name">
-      <h1>Cafe<br>Little<br>Leaf</h1>
-    </section>
-
-    <section class="plate p-hours">
-      <h2>営業時間</h2>
-      <div class="clockset">
-        <p class="clock">8:00–19:00</p>
-        <p class="when">平日</p>
+    <!-- 面1：店名 -->
+    <section class="plane plane--title">
+      <div class="inner">
+        <h1>Cafe Little Leaf</h1>
+        <p class="lede">小さな葉っぱのような、ひと休みを。</p>
       </div>
-      <div class="clockset">
-        <p class="clock">9:00–18:00</p>
-        <p class="when">土日祝</p>
+    </section>
+
+    <!-- 面2：メニューの見出しだけを持つ薄い面 -->
+    <section class="plane plane--menuhead">
+      <div class="inner">
+        <h2 class="mark">おすすめメニュー</h2>
       </div>
-      <p class="when closed">定休日：水曜日</p>
     </section>
 
-    <section class="plate p-tag">
-      <p class="tagline">小さな葉っぱのような、<br>ひと休みを。</p>
-    </section>
-
-    <section class="plate p-head">
-      <h2>おすすめメニュー</h2>
-    </section>
-
-    <article class="plate p-m1">
-      <div class="tone tone-leaf"></div>
-      <div class="pad">
+    <!-- 面3〜5：1品につき1面。面そのものが品を表す -->
+    <article class="plane plane--dish plane--bean">
+      <div class="inner">
         <h3>リーフブレンド</h3>
         <p>浅煎りの豆を使った、すっきり飲みやすい看板コーヒー。</p>
       </div>
     </article>
 
-    <article class="plate p-m2">
-      <div class="tone tone-fruit"></div>
-      <div class="pad">
+    <article class="plane plane--dish plane--tart">
+      <div class="inner">
         <h3>季節のフルーツタルト</h3>
         <p>その日仕入れた果物をたっぷりのせた、日替わりのタルト。</p>
       </div>
     </article>
 
-    <article class="plate p-m3">
-      <div class="tone tone-lemon"></div>
-      <div class="pad">
+    <article class="plane plane--dish plane--soda">
+      <div class="inner">
         <h3>自家製レモンソーダ</h3>
         <p>はちみつ漬けレモンを炭酸で割った、暑い日のおすすめ。</p>
       </div>
     </article>
 
-    <section class="plate p-book">
-      <button type="button">予約する</button>
+    <!-- 面6：ここだけ地が反転する。ページ唯一の跳ね -->
+    <section class="plane plane--book">
+      <div class="inner">
+        <button type="button">予約する</button>
+      </div>
     </section>
 
-    <section class="plate p-addr">
-      <p class="mark">CAFE LITTLE LEAF</p>
-      <p>〒150-0001 東京都渋谷区神宮前1-2-3<br>リトルリーフビル 1F</p>
-      <p class="copy">&copy; 2026 Cafe Little Leaf</p>
+    <!-- 面7：営業時間 -->
+    <section class="plane plane--hours">
+      <div class="inner">
+        <h2 class="mark">営業時間</h2>
+        <p>平日 8:00 - 19:00</p>
+        <p>土日祝 9:00 - 18:00</p>
+        <p>定休日：水曜日</p>
+      </div>
     </section>
 
   </main>
+
+  <footer class="plane plane--foot">
+    <div class="inner">
+      <p>〒150-0001 東京都渋谷区神宮前1-2-3 リトルリーフビル 1F</p>
+      <p class="copy">&copy; 2026 Cafe Little Leaf</p>
+    </div>
+  </footer>
 
 </body>
 </html>
