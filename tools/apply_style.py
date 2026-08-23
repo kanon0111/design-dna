@@ -3,15 +3,17 @@
 クラス名と DOM 構造は触らない（JS がそのまま動くように）。
 見た目の方向を変えるときはこのスクリプトで入れ替える。
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths
 import io, os, sys
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-TARGET = os.path.join(ROOT, "design-lab", "picker.html")
+TARGET = paths.PICKER
 
 
 def main():
     part = sys.argv[1] if len(sys.argv) > 1 else os.path.join(
-        ROOT, "design-lab", "_redesign", "picker.css.part")
+        paths.WEB, "_redesign", "picker.css.part")
     new = io.open(part, encoding="utf-8").read().strip()
     html = io.open(TARGET, encoding="utf-8").read()
 

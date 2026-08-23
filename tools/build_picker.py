@@ -2,11 +2,13 @@
 
 収集スクリプトを回したあとにこれを実行すれば picker が追従する。
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths
 import io, json, os, re
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-CAND = os.path.join(ROOT, "design-system", "refs", "candidates")
-PICKER = os.path.join(ROOT, "design-lab", "picker.html")
+CAND = paths.CANDIDATES
+PICKER = paths.PICKER
 
 def load(name):
     p = os.path.join(CAND, name)
@@ -16,7 +18,7 @@ def main():
     data = {"GODLY": load("godly.json"), "LAPA": load("lapa.json"), "AWW": load("awwwards.json")}
 
     # クラスタは refs/clusters.json（candidates の外）にある
-    cpath = os.path.join(ROOT, "design-system", "refs", "clusters.json")
+    cpath = paths.CLUSTERS
     clusters = json.load(io.open(cpath, encoding="utf-8"))["clusters"] if os.path.exists(cpath) else []
     data["CLUSTERS"] = clusters
 
@@ -36,7 +38,7 @@ def main():
     total = sum(len(v) for k, v in data.items() if k != "CLUSTERS")
     for k, v in data.items():
         print(f"{k:10s} {len(v):>4d}")
-    print(f"{'候補合計':10s} {total:>4d}  -> {os.path.relpath(PICKER, ROOT)}")
+    print(f"{'候補合計':10s} {total:>4d}  -> {os.path.relpath(PICKER, paths.PLUGIN_ROOT)}")
     covered = sum(len(c["members"]) for c in clusters)
     if clusters and covered != total:
         print(f"注意: クラスタの合計 {covered} 件が候補 {total} 件と一致しない（再クラスタリングが要る）")

@@ -3,12 +3,14 @@
 クラスタリングのラベルを私の主観で付けると、そこに「AIの平均」が入り込む。
 それを避けるため画像そのものから実測する。その素材集め。
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths
 import io, json, os, re, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-CAND = os.path.join(ROOT, "design-system", "refs", "candidates")
-OUT = os.path.join(ROOT, "design-system", "refs", "thumbs")
+CAND = paths.CANDIDATES
+OUT = paths.THUMBS
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
 

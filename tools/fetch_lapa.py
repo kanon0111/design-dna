@@ -3,14 +3,16 @@
 最新ページだけ取ると「今の流行の平均」に寄る（＝避けたかった AI っぽさ）ので、
 全311ページから均等に間引いて拾う。
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths
 import json, os, re, sys, urllib.request
 from html.parser import HTMLParser
 from concurrent.futures import ThreadPoolExecutor
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "refs", "candidates", "lapa.json")
+OUT = os.path.join(paths.CANDIDATES, "lapa.json")
 
 IMG = re.compile(r"cdn\.lapa\.ninja/assets/images/1x/([^\"'\s]+?)-thumb\.(jpg|png|webp)")
 CARD = re.compile(

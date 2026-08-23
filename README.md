@@ -77,74 +77,104 @@ DNA に入れてよいのは「アクセント色を持たない」のような*
 
 ## 構成
 
-```
-design-system/
-  axes.md              軸と重み、自由度のルール
-  dna.md               抽出した不変条件（1回分）
-  ledger.md            生成台帳
-  refs/
-    candidates/*.json  候補227件（URLのみ・26KB）
-    metrics.json       実測値
-    clusters.json      k-means の結果
-    notes.md           参照ごとの読み取り
-    picks.json         選んだもの
-  tools/
-    fetch_godly_sites.py   Godly の全アセット取得
-    fetch_lapa.py          Lapa を年代横断サンプリング
-    fetch_thumbs.py        解析用サムネ取得
-    analyze_thumbs.py      6指標を測る
-    cluster_thumbs.py      k-means と命名
-    build_picker.py        picker.html にデータを埋め込む
-    serve.py               配信 + 保存API + ジョブ起動
-    jobs.py                claude -p を headless で叩く
-    apply_style.py         picker の見た目を差し替える
-    reset.py               1回分を初期化
-    grab_frame.py          動画から最良フレームを1枚
+**プラグイン側（全プロジェクト共通・読むだけ）**
 
-design-lab/
-  index.html           Cafe Little Leaf（適用先のサンプル）
-  picker.html          選別画面
-  compare.html         旧3案（曖昧な指示から出したもの・比較対象）
-  compare-gen.html     DNA生成案の比較
-  _runs/               過去の生成案
-  _redesign/           picker 自体のデザイン案
 ```
+.claude-plugin/plugin.json
+commands/start.md  commands/reset.md
+axes.md                    軸と重み、自由度のルール
+refs/candidates/*.json     候補227件（URLのみ・26KB）
+refs/metrics.json          実測値
+refs/clusters.json         k-means の結果
+web/picker.html            選別画面
+web/compare.html           生成案の比較
+cache/                     収集した画像（gitignore・各自で取得）
+tools/
+  paths.py                 プラグイン側とプロジェクト側の線引き
+  fetch_godly_sites.py  fetch_lapa.py  fetch_thumbs.py
+  analyze_thumbs.py     cluster_thumbs.py
+  build_picker.py       apply_style.py
+  serve.py              jobs.py       reset.py
+  grab_frame.py
+```
+
+**プロジェクト側（1回分・適用先ごと）**
+
+```
+<project>/.design/
+  brief.md      この案件は何か
+  picks.json    選んだ ref
+  dna.md        抽出した不変条件
+  notes.md      参照ごとの読み取り
+  ledger.md     生成台帳
+  gen/          生成した案（サーバは /gen/ で配信）
+  runs/         過去の生成案（reset で退避される）
+```
+
+`examples/cafe/` が適用先のサンプル。Cafe Little Leaf のページと、
+曖昧な指示から出した旧3案（比較対象）が入っている。
 
 ## 使い方
 
-```bash
-python design-system/tools/serve.py 8000
+Claude Code のスキルとして、**ホームに1回置けば全プロジェクトから呼べる**。
+
+```powershell
+# Windows（リポジトリの実体はどこでもよい）
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\design-dna" -Target "<このリポジトリ>"
 ```
 
-http://localhost:8000/picker.html を開く。
+```bash
+# macOS / Linux
+ln -s "<このリポジトリ>" ~/.claude/skills/design-dna
+```
+
+次のセッションから自動で読まれる。外すときはリンクを消すだけ。
+
+| コマンド | すること |
+|---|---|
+| `/design-dna:start` | このプロジェクトを読んで brief を下書きし、参照を選ばせ、案を生成する |
+| `/design-dna:reset` | 1回分をリセットして選び直す |
+
+ビルトインの `/design`（Claude Design のキャンバス）とは**別物**。
+
+開発中は入れずに `claude --plugin-dir <このリポジトリ>` でも読める。
+
+### 手で動かす場合
+
+```bash
+cd <対象プロジェクト>
+python "<このリポジトリ>/tools/serve.py" 8000
+```
+
+**実行したディレクトリが適用先**になり、結果は `<project>/.design/` に書かれる
+（`DESIGN_DNA_PROJECT` で上書き可）。http://localhost:8000/picker.html を開く。
 
 - **自分で選ぶ** — 系統6つ → 詳細 → 骨格枠に1枚（色・文字は任意）
-- **おまかせ** — つくりたいものを書いて押す。Claude Code が headless で走り、
-  227件から3枠ぶんを理由つきで提案する。提案どまりで、採用するかは人が決める
+- **おまかせで選ぶ** — brief を書いて押すと `claude -p` が headless で走り、
+  227件から理由つきで提案する。提案どまりで、採用するかは人が決める
 
-自由度と案の数を決めて「決定」。生成ジョブが走り、終わると compare-gen.html に飛ぶ。
+自由度と案の数を決めて「決定」。生成ジョブが走り、終わると `/compare.html` に飛ぶ。
 
-初回は参照の収集が要る:
+初回だけ、AI が実物を見るためのサムネが要る:
 
 ```bash
-python design-system/tools/fetch_lapa.py 8
-python design-system/tools/fetch_godly_sites.py
-python design-system/tools/fetch_thumbs.py
-python design-system/tools/analyze_thumbs.py
-python design-system/tools/cluster_thumbs.py 6
-python design-system/tools/build_picker.py
+python "<このリポジトリ>/tools/fetch_thumbs.py"
 ```
+
+候補一覧・測定値・クラスタは同梱済みなので、収集し直す必要はない。
 
 ## 現状と次
 
-動いているのは「収集 → 分類 → 選別 → 自由度 → 生成 → 比較」まで。
+動いているのは「収集 → 分類 → 選別 → 自由度 → 生成 → 比較」と、
+プラグインとしての配布まで。
 
 次にやること:
 
-1. `.design/` をプロジェクト側に切り出す（今はプールと1回分の状態が同じ場所にある）
-2. Claude Code プラグインの形にする（`~/.claude/plugins/` に置けば全プロジェクトから呼べる）
-3. brief の自動下書き — 空欄に書かせず、既存のコードを読んで下書きする
-4. 生成した案と最終形の差分を回収して DNA に還す
+1. brief の自動下書きを詰める — いまは `/design-dna:start` がプロジェクトを読んで
+   下書きするところまで。既存デザインシステムの検出と「拡張するか、ゼロからか」の
+   分岐を実装で固める
+2. 生成した案と最終形の差分を回収して DNA に還す
+3. 参照プールを増やす（Lapa は全311ページ・約7,462件あり、いまは9ページ分だけ）
 
 ## 公開に切り替えるときに外すもの
 

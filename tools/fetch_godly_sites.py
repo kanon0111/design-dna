@@ -3,6 +3,9 @@
 thumbnail だけでなく desktop-full（フルページ丸ごと）とセクション単位の切り出しを
 取りに行く。存在しない組合せは 404 が返るだけなので黙って飛ばす。
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths
 import os, sys, urllib.request, urllib.error
 from concurrent.futures import ThreadPoolExecutor
 
@@ -17,8 +20,7 @@ KINDS = ["desktop-full","mobile-full","thumbnail",
 BASE = "https://cdn.godly.design/sites/{slug}/{kind}.webp"
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
-OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                   "refs", "images", "godly")
+OUT = os.path.join(paths.IMAGES, "godly")
 
 def one(job):
     slug, kind = job

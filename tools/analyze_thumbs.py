@@ -4,13 +4,15 @@ axes.md の軸のうち、画像から機械的に測れるのは
   密度 / コントラスト / （色の性格）
 の3つ。構図と主役は見ないと分からないので、ここでは測らない。
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths
 import io, json, os, sys
 import numpy as np
 import cv2
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-THUMBS = os.path.join(ROOT, "design-system", "refs", "thumbs")
-OUT = os.path.join(ROOT, "design-system", "refs", "metrics.json")
+THUMBS = paths.THUMBS
+OUT = paths.METRICS
 
 W = 480  # 密度を比較可能にするため横幅を揃える
 

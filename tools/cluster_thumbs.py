@@ -3,12 +3,14 @@
 「〇〇系」を私の主観でラベル付けすると、避けたかった「AIの平均」がそこに入る。
 なので分類は実測値だけで決め、名前も centroid の値から導出する。
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paths
 import io, json, os, sys
 import numpy as np
 import cv2
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-REFS = os.path.join(ROOT, "design-system", "refs")
+REFS = paths.REFS
 KEYS = ["lightness", "sat", "contrast", "hue_spread", "density", "whitespace"]
 
 

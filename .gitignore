@@ -1,17 +1,15 @@
 # 収集した画像キャッシュ
 # 他サイトのスクリーンショットなので再配布しない。tools/fetch_*.py で取り直せる。
-design-system/refs/thumbs/
-design-system/refs/images/
-design-system/refs/_slices/
-design-system/refs/_video-sample/
+cache/
 
-# 1回分の状態（reset.py で消える類）
-design-system/refs/request.json
-design-system/refs/decision.json
-design-system/refs/assist.json
+# プロジェクト側の1回分の状態（reset.py で消える類）
+**/.design/request.json
+**/.design/decision.json
+**/.design/assist.json
+**/.design/_slices/
 
 # 生成物（再生成できる）
-design-lab/_redesign/picker-redesign.html
+web/_redesign/picker-redesign.html
 
 # 環境依存
 .claude/settings.local.json
