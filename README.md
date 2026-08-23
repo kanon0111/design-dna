@@ -1,10 +1,16 @@
 # design-dna
 
+Claude Code のプラグイン。MIT。
+
 AI に「モダンでおしゃれに」と頼むと、**AI が良いと思うデザインの平均**が返ってくる。
 平均には個性がないので、どれも似た顔になる。これはそれを避けるための仕組み。
 
 要点はひとつだけ。**平均化が起きるのは「同じ属性に複数の参照が入る」時だけ**なので、
 参照を役割ごとに1枚ずつに絞り、変えていい範囲を軸の重みで明示的に制御する。
+
+> **正直な現状**: 個人の実験から出てきたもので、Windows でしか動かしていない。
+> 採用した案を実サイトに適用する工程はまだ無く、`.design/gen/` に案が出るところまで。
+> 参照の画像は同梱していないので、初回に自分で集める必要がある（数分）。
 
 ---
 
@@ -81,20 +87,21 @@ DNA に入れてよいのは「アクセント色を持たない」のような*
 
 ```
 .claude-plugin/plugin.json
-commands/start.md  commands/reset.md
+commands/setup.md  commands/start.md  commands/reset.md
 axes.md                    軸と重み、自由度のルール
 refs/candidates/*.json     候補227件（URLのみ・26KB）
 refs/metrics.json          実測値
 refs/clusters.json         k-means の結果
 web/picker.html            選別画面
-web/compare.html           生成案の比較
+web/compare.html           生成案の比較（データを読んで描く）
+web/_redesign/             picker 自身のデザイン案
 cache/                     収集した画像（gitignore・各自で取得）
 tools/
   paths.py                 プラグイン側とプロジェクト側の線引き
   fetch_godly_sites.py  fetch_lapa.py  fetch_thumbs.py
   analyze_thumbs.py     cluster_thumbs.py
-  build_picker.py       apply_style.py
-  serve.py              jobs.py       reset.py
+  build_picker.py       apply_style.py   make_redesign_images.py
+  serve.py              jobs.py          reset.py
   grab_frame.py
 ```
 
@@ -116,16 +123,21 @@ tools/
 
 ## 使い方
 
+```bash
+git clone https://github.com/kanon0111/design-dna.git
+```
+
 Claude Code のスキルとして、**ホームに1回置けば全プロジェクトから呼べる**。
+プロジェクトごとに入れる必要はない。
 
 ```powershell
 # Windows（リポジトリの実体はどこでもよい）
-New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\design-dna" -Target "<このリポジトリ>"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\design-dna" -Target "<clone先>"
 ```
 
 ```bash
 # macOS / Linux
-ln -s "<このリポジトリ>" ~/.claude/skills/design-dna
+ln -s "<clone先>" ~/.claude/skills/design-dna
 ```
 
 次のセッションから自動で読まれる。外すときはリンクを消すだけ。
@@ -138,13 +150,13 @@ ln -s "<このリポジトリ>" ~/.claude/skills/design-dna
 
 ビルトインの `/design`（Claude Design のキャンバス）とは**別物**。
 
-開発中は入れずに `claude --plugin-dir <このリポジトリ>` でも読める。
+開発中は入れずに `claude --plugin-dir <clone先>` でも読める。
 
 ### 手で動かす場合
 
 ```bash
 cd <対象プロジェクト>
-python "<このリポジトリ>/tools/serve.py" 8000
+python "<clone先>/tools/serve.py" 8000
 ```
 
 **実行したディレクトリが適用先**になり、結果は `<project>/.design/` に書かれる
@@ -159,8 +171,8 @@ python "<このリポジトリ>/tools/serve.py" 8000
 初回だけ、AI が実物を見るためのサムネが要る（`/design-dna:setup` と同じこと）。
 
 ```bash
-pip install -r "<このリポジトリ>/requirements.txt"
-python "<このリポジトリ>/tools/fetch_thumbs.py"
+pip install -r "<clone先>/requirements.txt"
+python "<clone先>/tools/fetch_thumbs.py"
 ```
 
 候補一覧・測定値・クラスタは同梱済みなので、収集し直す必要はない。
@@ -175,7 +187,8 @@ Python 3.10+ と `opencv-python` / `numpy` / `Pillow`。
 ## 現状と次
 
 「収集 → 分類 → 選別 → 自由度 → 生成 → 比較」が、picker のボタンだけで通る。
-別プロジェクトの空フォルダから実地確認済み。
+別プロジェクトの空フォルダから呼べることと、生成が3案まで通ることは実地確認済み
+（Windows / Python 3.11 / Claude Code 2.1）。
 
 次にやること:
 
@@ -185,21 +198,27 @@ Python 3.10+ と `opencv-python` / `numpy` / `Pillow`。
 3. 生成した案と最終形の差分を回収して DNA に還す
 4. Windows 以外での動作確認（いまは Windows でしか動かしていない）
 
-## 公開に切り替えるときに外すもの
+## 参照画像について
 
-このリポジトリは**プライベート前提**。公開するなら以下を必ず外すこと。
+**このリポジトリに参照デザインの画像は1枚も入っていない。**
 
-- `web/_redesign/*.jpg` — 他サイトのスクリーンショットの縮小版（picker 自身のデザイン案で使用）
-- `examples/cafe/.design/` — 1回分の作業記録。他人には要らない
+入っているのは `refs/candidates/*.json`（各CDNのURLと名前の一覧）と、
+そこから測った `metrics.json` / `clusters.json` だけ。画像は
+`tools/fetch_*.py` で**各自が自分の手元に集める**（`cache/` は `.gitignore` 済み）。
 
-`refs/candidates/*.json` は各CDNのURLだけなので同梱してよい。ただし Godly の
-robots.txt は `Content-Signal: search=yes, ai-train=no` を掲げているので、
-収集スクリプトを配る以上、その旨を README に書いておくこと。
+収集先には利用条件がある。godly.design の robots.txt は
+`Content-Signal: search=yes, ai-train=no` を掲げている。集めた画像を再配布しないこと。
+`fetch_lapa.py` は取得ページ数を引数で受け取るので、必要な分だけにすること。
 
-（`cache/` は最初から `.gitignore` 済み。画像は1枚も入っていない。）
+そもそも**プールを配ることに意味がない**、というのがこの仕組みの立場でもある。
+「フィルタが個人でないと個性は残らない」が前提なので、誰かが集めた227件を
+同梱したらそれはその人の趣味の押し付けになる。集めるところから各自でやるのが正しい。
 
 ## 注意
 
-このフォルダは OneDrive 配下にある。`.git` の同期でまれに競合が起きるので、
-気になるなら OneDrive の外へ移すこと（`~/.claude/skills/design-dna` の
-リンク先を張り替えるだけで済む）。
+- 「おまかせで選ぶ」と案の生成は、**実際に Claude Code を走らせる**ので利用量を消費する
+  （選定で1〜3分、生成で5〜10分）。ボタンにもその旨を書いてある
+- clone 先をクラウド同期フォルダ（OneDrive / Dropbox 等）に置くと、`.git` や
+  `cache/` の同期で競合することがある。リンクで参照しているので、
+  移すときは `~/.claude/skills/design-dna` を張り替えるだけで済む
+- 生成した案は `.design/gen/` に**新しいファイルとして**出る。既存のページは書き換えない
