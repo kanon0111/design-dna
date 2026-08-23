@@ -1,0 +1,30 @@
+/* 最低限のリセット */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 8px;
+  font-family: sans-serif;
+  line-height: 1.5;
+}
+
+/* 画像などがはみ出さないように（レスポンシブの保険） */
+img {
+  max-width: 100%;
+}
+
+/* メニューリストの記号だけ外す */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+/* 広い画面では横に広がりすぎないよう中央寄せ */
+@media (min-width: 600px) {
+  body {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}

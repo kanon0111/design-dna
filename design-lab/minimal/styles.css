@@ -1,0 +1,222 @@
+/* =========================================================
+   B. モダンでミニマル
+   ほぼモノクロ。ヘアラインと余白で構造を作り、
+   アクセントのグリーンは予約ボタン1箇所だけに使う。
+   ========================================================= */
+
+:root {
+  --bg:     oklch(0.990 0.002 250);
+  --ink:    oklch(0.180 0.006 250);
+  --mute:   oklch(0.560 0.008 250);
+  --faint:  oklch(0.760 0.006 250);
+  --rule:   oklch(0.900 0.004 250);
+  --accent: oklch(0.620 0.160 148);
+  --accent-dark: oklch(0.540 0.160 148);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 40px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Space Grotesk", "Yu Gothic", "YuGothic", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent-dark); }
+a:hover { color: var(--accent); }
+
+/* --- ヒーロー --- */
+
+.hero {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 96px 0 80px;
+}
+
+.hero-mark {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 56px;
+  border: 1px solid var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(48px, 9vw, 104px);
+  font-weight: 500;
+  line-height: 0.94;
+  letter-spacing: -0.045em; /* 大きな見出しは字間を詰める */
+}
+
+.lede {
+  max-width: 30ch;
+  margin: 32px 0 0;
+  color: var(--mute);
+  font-size: clamp(15px, 1.6vw, 17px);
+  font-weight: 300;
+}
+
+/* --- 行レイアウト（ラベル列 + 内容列） --- */
+
+.row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 40px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 48px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.label {
+  margin: 0;
+  padding-top: 4px;
+  color: var(--faint);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.row-body { min-width: 0; }
+
+/* --- 営業時間 --- */
+
+.hours {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 72px;
+  margin: 0;
+}
+
+.hours > div {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.hours dt {
+  color: var(--mute);
+  font-size: 13px;
+  font-weight: 300;
+}
+
+.hours dd {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* --- メニュー --- */
+
+.menu {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 40px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu li {
+  padding-top: 18px;
+  border-top: 1px solid var(--ink);
+}
+
+.num {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--faint);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+}
+
+.menu h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.menu p {
+  margin: 0;
+  color: var(--mute);
+  font-size: 13.5px;
+  font-weight: 300;
+  text-wrap: pretty;
+}
+
+/* --- 予約 --- */
+
+.cta { padding-bottom: 88px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 28px;
+  border: none;
+  border-radius: 2px;
+  background: var(--accent);
+  color: oklch(0.99 0.002 250);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background-color 0.18s;
+}
+
+.btn:hover { background: var(--accent-dark); }
+.btn svg { flex: none; }
+
+/* --- フッター --- */
+
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 40px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px 0 56px;
+  border-top: 1px solid var(--rule);
+  color: var(--mute);
+  font-size: 12px;
+  font-weight: 300;
+}
+
+footer p { margin: 0; }
+.copy { color: var(--faint); }
+
+/* --- タブレット --- */
+
+@media (max-width: 900px) {
+  .row { grid-template-columns: 1fr; gap: 20px; }
+  .menu { grid-template-columns: 1fr; gap: 28px; }
+}
+
+/* --- モバイル --- */
+
+@media (max-width: 640px) {
+  body { padding: 0 22px; }
+  .hero { padding: 64px 0 56px; }
+  .hero-mark { margin-bottom: 40px; }
+  .row { padding: 36px 0; }
+  .hours { gap: 6px 36px; }
+  .btn { width: 100%; justify-content: space-between; }
+}

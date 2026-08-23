@@ -1,0 +1,81 @@
+/* 案A — 自由度50% / 解放: 装飾2＋階層4＋コントラスト9＋密度15＋地の明度20 ＝ 50
+   固定: 構図(左寄せ非対称) / 主役(画像)
+   振り方: 地の明度を「ライト基調」へ反転。コントラストをトーナルへ落とし、
+           密度は中、装飾はゼロ。＝ 静かで明るいページ */
+
+:root{
+  --paper:#f2f0e9;          /* 地はこちらが主(明度=ライト基調) */
+  --ink:#23221e;            /* コントラスト=トーナル -> 純黒にしない */
+  --mute:#7d7a72;
+  --line:rgba(35,34,30,.16);
+  --band:#23221e;           /* 黒はアクセントの帯としてだけ使う */
+  --c-magenta:#c96a8a;      /* トーナル -> 彩度も一段落とす */
+  --c-amber:#c9973f;
+  --c-sky:#7f9fb5;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--paper);color:var(--ink);
+  font-family:"Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  font-size:15px;line-height:1.85;-webkit-font-smoothing:antialiased;
+}
+
+/* 装飾=無。罫線もテクスチャも使わない */
+.label{
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--mute);margin-bottom:20px;
+}
+.wrap{max-width:1120px;margin:0 auto;padding:0 40px}
+section{padding:110px 0}              /* 密度=中 */
+
+/* ---- ヒーロー: 左寄せ非対称(構図は固定) ---- */
+.hero{padding:96px 0 104px}
+.hero-grid{display:grid;grid-template-columns:1.3fr .9fr;gap:56px;align-items:end}
+.hero h1{
+  font-size:clamp(2.6rem,6vw,4.6rem);   /* 階層=中 -> 極端にしない */
+  line-height:1.02;letter-spacing:-.025em;font-weight:600;
+}
+.hero .sub{color:var(--mute);font-size:14px;max-width:26em;padding-bottom:10px}
+
+/* ---- 営業時間: 黒の帯はここだけ ---- */
+.hours{background:var(--band);color:var(--paper)}
+.hours .label{color:rgba(242,240,233,.5)}
+.hours-grid{display:grid;grid-template-columns:1.3fr .9fr;gap:56px}
+.hours h2{font-size:clamp(1.7rem,3.6vw,2.6rem);line-height:1.15;letter-spacing:-.02em;font-weight:600}
+.hours dl{display:grid;grid-template-columns:auto 1fr;gap:14px 28px;font-size:14px;align-content:start}
+.hours dt{color:rgba(242,240,233,.55)}
+.hours dd{text-align:right;font-variant-numeric:tabular-nums}
+
+/* ---- メニュー: 主役=画像(固定) ---- */
+.menu h2{font-size:clamp(1.7rem,3.6vw,2.6rem);line-height:1.15;letter-spacing:-.02em;font-weight:600;margin-bottom:52px}
+.items{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+.item figure{aspect-ratio:4/5;overflow:hidden;margin-bottom:18px}
+.ph{width:100%;height:100%}
+/* トーナル -> 明部に寄せた柔らかいグラデ */
+.ph.m{background:linear-gradient(165deg,#e8c6d2,var(--c-magenta))}
+.ph.a{background:linear-gradient(165deg,#ecd9b4,var(--c-amber))}
+.ph.s{background:linear-gradient(165deg,#cfdde6,var(--c-sky))}
+.item h3{font-size:18px;font-weight:600;letter-spacing:-.01em;margin-bottom:6px}
+.item p{color:var(--mute);font-size:13.5px;line-height:1.8;max-width:24em}
+
+/* ---- 予約 ---- */
+.reserve-grid{display:grid;grid-template-columns:1.3fr .9fr;gap:56px;align-items:end}
+.reserve h2{font-size:clamp(1.9rem,4.4vw,3.2rem);line-height:1.08;letter-spacing:-.025em;font-weight:600}
+.btn{
+  display:inline-block;border:1px solid var(--ink);background:none;color:var(--ink);
+  font:inherit;font-size:13px;letter-spacing:.06em;padding:16px 44px;border-radius:0;
+  cursor:pointer;transition:.18s;
+}
+.btn:hover{background:var(--ink);color:var(--paper)}
+
+footer{padding:64px 0 72px}
+.foot{display:grid;grid-template-columns:1.3fr .9fr;gap:56px;align-items:end}
+footer address{font-style:normal;font-size:13px;color:var(--mute);max-width:26em}
+footer .copy{font-size:11px;color:var(--mute);letter-spacing:.06em}
+
+@media (max-width:880px){
+  .hero-grid,.hours-grid,.reserve-grid,.foot{grid-template-columns:1fr;gap:30px;align-items:start}
+  .items{grid-template-columns:1fr}
+  section{padding:78px 0}
+  .wrap{padding:0 24px}
+}

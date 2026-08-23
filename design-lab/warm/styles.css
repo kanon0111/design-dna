@@ -1,0 +1,196 @@
+/* =========================================================
+   A. 温かみのあるナチュラル
+   紙のような温白色 + 深いブラウン。
+   アクセントは葉のグリーンとテラコッタ（明度・彩度は揃え、色相だけ変える）。
+   ========================================================= */
+
+:root {
+  --paper:      oklch(0.972 0.014 82);
+  --paper-deep: oklch(0.945 0.020 82);
+  --ink:        oklch(0.28 0.030 60);
+  --ink-soft:   oklch(0.50 0.028 62);
+  --leaf:       oklch(0.58 0.090 145);
+  --clay:       oklch(0.58 0.090 45);
+  --clay-dark:  oklch(0.48 0.090 45);
+  --rule:       oklch(0.87 0.020 78);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 24px;
+  background-color: var(--paper);
+  /* ごく薄い紙の粒感（外部画像は使わずSVGノイズで） */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  color: var(--ink);
+  font-family: "Newsreader", "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", serif;
+  font-size: 17px;
+  line-height: 1.9;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--clay-dark); }
+a:hover { color: var(--clay); }
+
+/* --- ヒーロー --- */
+
+.hero {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 112px 0 88px;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 28px;
+  color: var(--leaf);
+  font-size: 14px;
+  letter-spacing: 0.14em;
+}
+
+.leaf { flex: none; }
+
+h1 {
+  margin: 0;
+  font-size: clamp(52px, 11vw, 92px);
+  font-weight: 400;
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+}
+
+h1 em {
+  display: inline-block;
+  padding-left: 0.6em; /* 2行目を少しずらして手書きの間合いを出す */
+  color: var(--leaf);
+  font-style: italic;
+  font-weight: 300;
+}
+
+.lede {
+  margin: 36px 0 0;
+  color: var(--ink-soft);
+  font-size: clamp(18px, 2.6vw, 22px);
+  line-height: 2;
+}
+
+.br-sp { display: none; }
+
+/* --- 共通ブロック --- */
+
+.block {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 56px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.label {
+  margin: 0 0 28px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+}
+
+/* --- 営業時間 --- */
+
+.hours dl {
+  display: grid;
+  grid-template-columns: 6em 1fr;
+  gap: 10px 24px;
+  margin: 0;
+  font-size: 18px;
+}
+
+.hours dt { color: var(--ink-soft); }
+.hours dd { margin: 0; }
+
+/* --- メニュー --- */
+
+.menu ul {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 6px;
+  color: var(--leaf);
+  font-size: 23px;
+  font-weight: 400;
+}
+
+.menu p {
+  margin: 0;
+  padding-left: 25px; /* 葉アイコンぶん本文を下げて揃える */
+  color: var(--ink-soft);
+  font-size: 16px;
+}
+
+/* --- 予約 --- */
+
+.cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  padding-bottom: 72px;
+}
+
+.cta-note {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 15px;
+}
+
+.btn {
+  min-height: 52px;
+  padding: 0 44px;
+  border: none;
+  border-radius: 999px;
+  background: var(--clay);
+  color: var(--paper);
+  font-family: inherit;
+  font-size: 17px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn:hover { background: var(--clay-dark); }
+
+/* --- フッター --- */
+
+footer {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 40px 0 64px;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+footer p { margin: 0; }
+.copy { margin-top: 18px; letter-spacing: 0.06em; }
+
+/* --- モバイル --- */
+
+@media (max-width: 640px) {
+  body { padding: 0 20px; font-size: 16px; }
+  .hero { padding: 72px 0 56px; }
+  h1 em { padding-left: 0; }
+  .br-sp { display: inline; }
+  .block { padding: 44px 0; }
+  .hours dl { grid-template-columns: 5em 1fr; font-size: 17px; }
+  .btn { width: 100%; padding: 0; }
+}

@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>参考にするデザインを選ぶ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+  /* 編集室 — 生成りの紙、明朝の見出し、罫線だけで構造をつくる */
+  :root{
+    --bg:#f6f3ec; --card:#f6f3ec; --band:#efeade;
+    --line:#1c1a17; --rule:#ddd6c8; --soft:#c8c0b0;
+    --fg:#1c1a17; --muted:#857f74; --dim:#a09889;
+    --pick:#a83a2a; --warn:#a83a2a;
+    --slot1:#a83a2a; --slot2:#a83a2a; --slot3:#a83a2a;
+    --mincho:'Zen Old Mincho','Yu Mincho',YuMincho,'Hiragino Mincho ProN',serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',Meiryo,sans-serif;
+    font-weight:400;line-height:1.8}
+
+  /* --- 見出し --- */
+  header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);
+    padding:30px 72px 22px;display:flex;align-items:baseline;gap:24px;flex-wrap:wrap}
+  h1{font-family:var(--mincho);font-size:28px;margin:0;font-weight:700;
+    letter-spacing:.02em;line-height:1.2;white-space:nowrap}
+  .sub{font-size:12px;color:var(--muted)}
+  .spacer{flex:1}
+  button{font:inherit;font-size:13px;padding:6px 2px;border-radius:0;cursor:pointer;
+    border:0;border-bottom:1px solid var(--soft);background:none;color:#5b5549}
+  button:hover{border-bottom-color:var(--line);color:var(--line)}
+  .status{font-size:12px;color:var(--muted);letter-spacing:.12em;min-width:160px;text-align:right}
+  .status.ok{color:var(--fg)}
+  .status.ng{color:var(--pick)}
+
+  /* --- 3つの枠（ヘッダー版・現在は未使用） --- */
+  .slots{display:flex;gap:14px;flex-wrap:wrap}
+  .slot{display:flex;align-items:center;gap:10px;border:0;border-top:2px solid var(--line);
+    border-radius:0;padding:12px 0 0;font-size:12px;background:none;width:214px}
+  .slot .dot{display:none}
+  .slot .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .slot .role{font-size:11px;letter-spacing:.18em;color:var(--muted);font-weight:400}
+  .slot .val{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--dim)}
+  .slot.filled .val{font-family:var(--mincho);color:var(--fg);font-size:15px}
+  .slot .x{flex:none;width:24px;height:24px;border-radius:0;border:1px solid var(--soft);
+    background:none;color:var(--muted);font-size:13px;line-height:1;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;padding:0}
+  .slot .x:hover{border-color:var(--pick);color:var(--pick)}
+  .slot.ai{border-top-color:var(--pick)}
+
+  /* 選んだもののサムネ */
+  .pic{width:38px;height:50px;border-radius:0;overflow:hidden;flex:none;
+    background:#fff;border:1px solid var(--rule);cursor:pointer;display:block}
+  .pic img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+  .pic.empty{border:1px dashed var(--soft);cursor:default}
+
+  main{max-width:1560px;margin:0 auto;padding:0 72px 80px}
+  .lead{font-family:var(--mincho);font-size:17px;color:var(--fg);margin:32px 0 22px;line-height:1.8}
+  .lead b{font-weight:700}
+
+  /* --- 系統 --- */
+  .cats{display:grid;gap:38px 30px;grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}
+  .cat{border:0;border-radius:0;background:none;overflow:visible;cursor:pointer;
+    display:flex;flex-direction:column;gap:12px;transition:.15s}
+  .cat:hover{opacity:.78}
+  .cat .montage{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--rule)}
+  .cat .montage div{aspect-ratio:3/4;overflow:hidden;background:#fff}
+  .cat .montage img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+  /* 見出しと件数は別セルなので、列間を0にしないと下の罫線が分断される */
+  .cat .body{padding:0;display:grid;grid-template-columns:1fr auto;
+    grid-template-areas:"t n" "d d";align-items:baseline;column-gap:0}
+  .cat .title{grid-area:t;font-family:var(--mincho);font-size:21px;font-weight:700;margin:0;
+    border-bottom:1px solid var(--line);padding:0 14px 9px 0}
+  .cat .n{grid-area:n;font-family:var(--mincho);font-size:21px;font-weight:700;color:var(--pick);
+    margin:0;border-bottom:1px solid var(--line);padding-bottom:9px}
+  .cat .desc{grid-area:d;font-size:12px;color:var(--muted);line-height:1.7;
+    letter-spacing:.04em;margin-top:9px}
+
+  /* --- 一覧 --- */
+  .crumb{display:flex;align-items:baseline;gap:16px;margin:30px 0 20px;flex-wrap:wrap;
+    border-bottom:1px solid var(--line);padding-bottom:12px}
+  .crumb .now{font-family:var(--mincho);font-size:22px;font-weight:700}
+  .crumb .meta{font-size:12px;color:var(--muted);letter-spacing:.1em}
+  .grid{display:grid;gap:30px 24px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+  .card{position:relative;border:0;border-radius:0;overflow:visible;background:none;
+    cursor:pointer;transition:.12s}
+  .card:hover{opacity:.78}
+  .card.on,.card.on[data-role="色"],.card.on[data-role="文字"]{opacity:1}
+  .card.on .thumb{outline:2px solid var(--line);outline-offset:4px}
+  .thumb{aspect-ratio:3/4;background:#fff;overflow:hidden;display:block;
+    border:1px solid var(--rule)}
+  .thumb img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+  .meta{display:flex;align-items:baseline;gap:10px;padding:11px 0 0;font-size:13px;
+    border-top:1px solid var(--line);margin-top:12px}
+  .id{color:var(--dim);font-size:11px;letter-spacing:.1em}
+  .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    font-family:var(--mincho);font-size:15px}
+  .src{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.14em}
+  .badge{position:absolute;top:0;left:0;padding:4px 11px;border-radius:0;
+    font-size:11px;letter-spacing:.1em;color:#f6f3ec;background:var(--pick);display:none}
+  .card.on .badge,.card.on[data-role="色"] .badge,.card.on[data-role="文字"] .badge{
+    display:block;background:var(--pick)}
+  a.ext{position:absolute;top:0;right:0;background:var(--line);color:var(--bg);
+    text-decoration:none;font-size:11px;padding:4px 10px;border-radius:0;opacity:0;transition:.15s}
+  .card:hover a.ext,.card:hover .ext{opacity:1}
+  .ext.zoom{position:absolute;top:0;right:0;background:var(--line);color:var(--bg);
+    border:0;font-size:11px;letter-spacing:.1em;padding:5px 11px;border-radius:0;
+    opacity:0;transition:.15s;cursor:pointer}
+  .hidden{display:none}
+
+  /* --- 自由度 --- */
+  #panel{position:sticky;bottom:0;z-index:15;background:var(--band);border-top:1px solid var(--line);
+    padding:24px 72px 28px;display:flex;gap:52px;align-items:flex-end;flex-wrap:wrap}
+  #panel .col{display:flex;flex-direction:column;gap:9px}
+  #panel .col.grow{flex:1;min-width:300px}
+  #panel label{font-family:var(--mincho);font-size:15px;font-weight:700;
+    display:flex;align-items:baseline;gap:12px}
+  #panel .hint{font-size:11.5px;color:var(--muted);line-height:1.7}
+  #panel .hint b{color:var(--fg);font-weight:700}
+  input[type=range]{width:100%;accent-color:var(--pick);height:12px}
+  .fnum{font-family:var(--mincho);font-size:40px;font-weight:700;line-height:1;letter-spacing:-.01em}
+  .axes{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px}
+  .ax{font-size:12px;padding:4px 11px;border-radius:0;border:1px solid var(--soft);color:var(--dim)}
+  .ax.free{background:var(--line);border-color:var(--line);color:var(--bg)}
+  select{font:inherit;font-family:var(--mincho);font-size:18px;padding:6px 2px;border-radius:0;
+    border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg)}
+  button.go{background:var(--line);border:0;color:var(--bg);font-weight:500;
+    font-size:16px;padding:17px 46px;letter-spacing:.04em}
+  button.go:hover{background:var(--pick)}
+  button.go:disabled{opacity:.35;cursor:not-allowed}
+  #reqmsg{font-size:12px;color:var(--muted);margin-top:8px}
+  #reqmsg.ok{color:var(--fg)}
+
+  /* --- おまかせ --- */
+  #ai{max-width:1560px;margin:0 auto;border:0;border-bottom:1px solid var(--rule);
+    background:none;padding:0 0 30px}
+  #ai .cap{font-family:var(--mincho);font-size:17px;color:var(--fg);line-height:1.8;
+    padding:30px 0 14px}
+  #ai .cap b{font-weight:700}
+  #ai .row{display:flex;gap:32px;align-items:flex-end;flex-wrap:wrap}
+  #ai textarea{flex:1;min-width:300px;min-height:52px;resize:vertical;font:inherit;font-size:16px;
+    padding:0 0 11px;border-radius:0;border:0;border-bottom:1px solid var(--line);
+    background:none;color:var(--fg);line-height:1.7}
+  #ai textarea::placeholder{color:var(--dim)}
+  button.ask{background:var(--line);border:0;color:var(--bg);font-weight:500;
+    font-size:15px;padding:15px 26px;white-space:nowrap}
+  button.ask:hover{background:var(--pick)}
+  #aimsg{font-size:12.5px;color:var(--muted);margin-top:12px}
+  #aimsg.ok{color:var(--fg)}
+
+  /* --- 選択中 --- */
+  #proposal{display:none;margin-top:34px;border:0;padding-top:0}
+  #proposal.on{display:block}
+  #proposal h3{font-family:var(--mincho);font-size:20px;margin:0 0 22px;font-weight:700;
+    display:flex;align-items:center;gap:14px}
+  .pcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:30px;
+    margin-bottom:28px;border:0}
+  .pcard{position:relative;border:0;border-top:2px solid var(--line);border-radius:0;
+    background:none;display:flex;gap:18px;padding:16px 0 0}
+  .pcard .pic{width:104px;height:138px;border-radius:0;border:1px solid var(--rule)}
+  .pcard .txt{min-width:0;display:flex;flex-direction:column;gap:5px}
+  .pcard .r{font-size:11px;letter-spacing:.18em;color:var(--muted)}
+  .pcard .n{font-family:var(--mincho);font-size:19px;font-weight:700;line-height:1.3;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pcard .why{font-size:12.5px;color:#6b655a;line-height:1.7;text-wrap:pretty}
+  .pcard .x{position:absolute;top:16px;right:0;width:24px;height:24px;border-radius:0;
+    border:1px solid var(--soft);background:none;color:var(--muted);font-size:13px;
+    line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .pcard .x:hover{border-color:var(--pick);color:var(--pick)}
+  .pcard.empty{border-top:1px dashed var(--soft);cursor:pointer;align-items:flex-start}
+  .pcard.empty .pic{border:1px dashed var(--soft)}
+  .pcard.empty:hover{opacity:.72}
+  .pcard .dim{color:var(--dim)}
+  .pcard .acts{display:flex;gap:14px;margin-top:6px}
+  .pcard .acts a,.pcard .acts button{font-size:12px;padding:0 0 1px;border-radius:0;
+    border:0;border-bottom:1px solid var(--soft);background:none;color:#5b5549;
+    text-decoration:none;cursor:pointer}
+  .pcard .acts a:hover,.pcard .acts button:hover{border-bottom-color:var(--line);color:var(--line)}
+  #paccept{display:flex;gap:14px}
+  #paccept .go{background:var(--pick);font-size:14.5px;padding:13px 30px}
+  #paccept .go:hover{background:var(--line)}
+  #paccept button:not(.go){border:1px solid var(--soft);border-bottom-width:1px;
+    padding:13px 26px;font-size:14.5px;color:#5b5549}
+  #paccept button:not(.go):hover{border-color:var(--line);background:none}
+  .aitag{font-size:11px;letter-spacing:.16em;color:var(--pick);
+    border:1px solid var(--pick);border-radius:0;padding:3px 9px}
+
+  /* --- 拡大表示 --- */
+  #lb{position:fixed;inset:0;z-index:100;background:rgba(28,26,23,.92);display:none;
+    align-items:center;justify-content:center;padding:28px;cursor:zoom-out}
+  #lb.on{display:flex}
+  #lb figure{margin:0;max-width:100%;max-height:100%;display:flex;flex-direction:column;gap:12px}
+  #lb img{max-width:100%;max-height:calc(100vh - 110px);object-fit:contain;
+    border-radius:0;background:#fff;display:block;margin:0 auto}
+  #lb figcaption{font-family:var(--mincho);color:#f6f3ec;font-size:15px;text-align:center;
+    display:flex;gap:18px;justify-content:center;align-items:center}
+  #lb figcaption a{color:#f6f3ec}
+  #lb figcaption span:last-child{font-family:'Zen Kaku Gothic New',sans-serif;
+    font-size:12px;color:#a8a196}
+</style>
+</head>
+<body>
+<header>
+  <h1>参考にするデザインを選ぶ</h1>
+  <span class="spacer"></span>
+  <span class="status" id="st">読み込み中…</span>
+  <button onclick="clearAll()">クリア</button>
+</header>
+
+<main>
+  <!-- 段階1 -->
+  <section id="ai">
+    <p class="cap">
+      作りたいものを書くと、227件から選びます。1〜3分かかります。
+    </p>
+    <div class="row">
+      <textarea id="brief" placeholder="例: 個人経営のカフェ。落ち着いていて、安っぽく見えないもの。"></textarea>
+      <button class="ask" onclick="askAI()">おまかせで選ぶ</button>
+    </div>
+    <div id="aimsg"></div>
+    <div id="proposal">
+      <h3><span id="ptitle">選択中</span> <span class="aitag" id="ptag" style="display:none">未確定</span></h3>
+      <div class="pcards" id="reasons"></div>
+      <div id="paccept">
+        <button class="go" onclick="acceptAI()">これでいく</button>
+        <button onclick="rejectAI()">やめる</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="v1">
+    <p class="lead">雰囲気の近いものでまとめてあります。</p>
+    <div class="cats" id="cats"></div>
+  </section>
+
+  <!-- 段階2 -->
+  <section id="v2" class="hidden">
+    <div class="crumb">
+      <button onclick="toCats()">← 戻る</button>
+      <span class="now" id="cname"></span>
+      <span class="meta" id="cmeta"></span>
+    </div>
+    <p class="lead">ピンときたものをクリック。<b>1枚だけで十分</b>です。</p>
+    <div class="grid" id="grid"></div>
+  </section>
+</main>
+
+<div id="lb" onclick="closeLB()">
+  <figure>
+    <img id="lbimg" alt="">
+    <figcaption><span id="lbname"></span><span>クリックで閉じる</span></figcaption>
+  </figure>
+</div>
+
+<div id="panel">
+  <div class="col grow">
+    <label>自由度 <span class="fnum" id="fv">50</span>%</label>
+    <input type="range" id="freedom" min="0" max="100" step="5" value="50">
+    <div class="axes" id="axes"></div>
+    <div class="hint" id="fhint"></div>
+  </div>
+  <div class="col">
+    <label>案の数</label>
+    <select id="variants">
+      <option value="2">2案</option>
+      <option value="3" selected>3案</option>
+      <option value="4">4案</option>
+    </select>
+    <div class="hint">それぞれ違う振り方をします</div>
+  </div>
+  <div class="col">
+    <label>適用先</label>
+    <select id="target">
+      <option value="cafe">Cafe Little Leaf</option>
+    </select>
+    <button class="go" id="go" onclick="decide()">決定</button>
+    <div id="reqmsg"></div>
+  </div>
+</div>
+
+<script>
+const GODLY=[["auxia","https://www.auxia.io/","Auxia"],["serro","https://serro.ai/","Serro AI"],["coderabbit","https://www.coderabbit.ai/","AI Code Reviews"],["arrakis","https://www.arrakis.tech/","Arrakis"],["weav","https://weav.com/","Weav"],["vessa","https://vessa.design/","Vessa"],["lightspark","https://www.lightspark.com/","Lightspark"],["pryzm","https://pryzm.design/","Pryzm"],["set","https://set.space/","Set Space"],["clears","https://www.clears.ai/","Clears"],["spade","https://spade.com/","Spade"],["round","https://www.round.ai/","Round"],["solidroad","https://solidroad.com/","Solidroad"],["deck","https://deck.co/","Deck"],["rerun","https://rerun.io/","Rerun"],["rulebase","https://rulebase.co/","Rulebase"],["teak","https://teak.io/","Teak"],["melius","https://www.melius.com/","Melius"]];
+const LAPA=[["weast-coast-games-weast-coast-studio","weastcoast","jpg","Weast Coast Games"],["nothin","Nothin","jpg","Nothin'"],["daphne","daphnethelabel","jpg","DAPHNE"],["prototype","prototypestudio","jpg","Prototype"],["leo-parpeix","Leoparpeix","jpg","Leo Parpeix"],["connected-earth","connected.earth","jpg","Connected Earth"],["dirt-2","dirtverse","jpg","Dirt"],["ironhill","ironhill","jpg","Ironhill"],["artiom-yakushev","art-yakushev","jpg","Artiom Yakushev"],["dada-projects","dada-projects","jpg","DADA PROJECTS"],["lasso","lassocommerce","jpg","Lasso"],["antinomy-studio","antinomy","jpg","Antinomy Studio"],["innovation-endeavors","innovationendeavors","jpg","Innovation Endeavors"],["hilos","hilos","jpg","Hilos"],["bloome","bloome","jpg","Bloome"],["dan-mall","danmall","jpg","Dan Mall"],["funner","shopfunner","jpg","Funner"],["serotoninn","serotoninn","jpg","Serotoninn"],["kinfolk","kinfolk","webp","Kinfolk"],["pursuit","pursuit","webp","Pursuit"],["fonts-ninja-2","fonts-ninja-2","webp","Fonts Ninja"],["wimpdecaf","wimpdecaf","webp","Wimp"],["uxkosta","uxkosta","webp","Uxkosta"],["studio-design-4","studio-design-4","webp","STUDIO"],["makemepulse-3","makemepulse-3","webp","makemeplay"],["littletroop","littletroop","webp","Little Troop"],["depoly","depoly","webp","DePoly"],["artboard-studio-3","artboard-studio-3","webp","Artboard Studio"],["alexhunting","alexhunting","webp","Alex Hunting"],["summaequity","summaequity","webp","Summa Equity"],["cristinagomezruiz","cristinagomezruiz","webp","Cristina Gómez"],["13322566869","13322566869","webp","+13322566869"],["decathland","decathland","webp","Decathland"],["unplainofficial","unplainofficial","webp","unplain"],["madecrate","madecrate","webp","Made Crate"],["alipo","alipo","webp","Alipo"],["ens-domains","ens-domains","webp","ENS Domains"],["ethos-network","ethos-network","webp","Ethos Network"],["yunastories","yunastories","webp","Yuna"],["studio-size","studio-size","webp","Studio Size"],["den-cool","den-cool","webp","Den.Cool"],["lfg-cash","lfg-cash","webp","LFG"],["wearemotto","wearemotto","webp","Motto"],["totems-soclage","totems-soclage","webp","Totems"],["allwhere","allwhere","webp","allwhere"],["leoleo-studio","leoleo-studio","webp","LEOLEO"],["65db","65db","webp","65dB"],["boostinsurance","boostinsurance","webp","Boost Insurance"],["scandiboom","scandiboom","webp","SCANDIBOOM"],["cleano2","cleano2","webp","CleanO2"],["mkipper","mkipper","webp","Matt Kipper"],["obsidian","obsidian","webp","Obsidian"],["lawtrades","lawtrades","webp","Lawtrades"],["capital-xyz","capital-xyz","webp","Capital"],["docestudio","docestudio","webp","Doce Studio"],["hakaji","hakaji","webp","Hakaji"],["annaparellada","annaparellada","webp","Anna Parellada"],["aquis","aquis","webp","AQUIS"],["ready-so","ready-11-20-2022","webp","Ready"],["magician-design","magician-design","webp","Magician for Figma"],["dmcg","dmcg","webp","David McGillivray"],["cryptocoven","cryptocoven","webp","crypto coven"],["usestir","usestir","webp","Stir"],["huddle-works","huddle-works","webp","Huddle"],["decipad","decipad","webp","Decipad"],["clay-earth","clay-earth","webp","Clay"],["sopercopenbragen","sopercopenbragen","webp","Soper Copenbragen"],["comnarchitects","comnarchitects","webp","COMN Architects"],["thalby","thalby","webp","Thalby Guides"],["launchdarkly","launchdarkly","webp","LaunchDarkly"],["joinclubhouse","joinclubhouse","webp","Clubhouse"],["valkyrae-store","valkyrae-store","webp","Valkyrae Store"],["oxide-computer","oxide-computer","webp","Oxide"],["whiteboard-4","whiteboard-09-25-2021","webp","Whiteboard"],["500co","500co","webp","500 Global"],["leejameson","leejameson","webp","Lee Jameson"],["drinkditto","drinkditto","webp","Drink Ditto"],["helloflaco","helloflaco","webp","Flaco"],["shopify-dev","shopify-dev","webp","Shopify Developers Platform"],["theneweramagazine","theneweramagazine","webp","The New Era Magazine"],["pangrampangram-2","pangrampangram-2","webp","Pangram Pangram Foundry"],["muzli","muzli","webp","Muzli Design Inspiration"],["dola","dola","webp","Dola"],["espacego","espacego","webp","Espace Go"],["monopo-london","monopo-london","webp","monopo london"],["bigtechfellowship","bigtechfellowship","webp","BIGTECH Fellowship"],["seedclub","seedclub","webp","Seed Club"],["perimeterwatch","perimeterwatch","webp","PerimeterWatch"],["aliciakeys","aliciakeys","webp","Alicia Keys"],["lilnasx","lilnasx","webp","Jean Paul Gaultier x Lil Nas X"],["weareowlsome","weareowlsome","webp","We are owlsome"],["rainbo","rainbo","webp","Rainbo"],["plainjaneevents","plainjaneevents","webp","Plain Jane Events"],["builtbyfield","builtbyfield","webp","Field"],["tranen","tranen","webp","Tranen"],["rafa","rafa","webp","Rafael Conde"],["salusbody","salusbody","webp","Salus Body"],["letterco","letterco","webp","Letter"],["abcdinamo","abcdinamo","webp","Dinamo"],["makelemonade","makelemonade","webp","Make Lemonade"],["jessbayer","jessbayer","webp","Jessica Bayer"],["maddad","maddad","webp","Maddad"],["monoware","monoware","webp","Monoware"],["segment-5","segment-09-18-2020","webp","Segment"],["tigertells","tigertells","webp","Tiger Tells"],["xxix","xxix","webp","XXIX"],["readng","readng","webp","Readng"],["avocode-5","avocode-09-16-2020","webp","Avocode"],["windmillair","windmillair","webp","Windmill"],["wonderlandams-2","wonderlandams-09-16-2020","webp","WONDERLAND"],["mcsaatchigroup","mcsaatchigroup","webp","M&amp;C Saatchi Group South Africa"],["vorrel","vorrel","webp","Vorrel Prendergast Jr"],["ankr","ankr","webp","Ankr"],["enjoyeducation","enjoyeducation","webp","Enjoy Education"],["sensorstation","sensorstation","webp","Sensor Station"],["delt","delt","webp","DELT"],["smarterpatterns","smarterpatterns","webp","Smarter Patterns"],["visualeyes","visualeyes","webp","VisualEyes"],["buildingabrandshow","buildingabrandshow","webp","Building A Brand"],["headway","headwayco","webp","Headway"],["fredericbriolet","fredericbriolet","webp","Fred Briolet"],["melaniedaveid","melaniedaveid","webp","Melanie Daveid"],["android-10","android-10","webp","Android 10"],["anteelo","anteelo","webp","Anteelo"],["signature-fnatic","signature-fnatic","webp","Fnatic Signature Editions"],["aerolab-3","aerolab-09-12-2019","webp","Aerolab"],["gilhuybrecht","gilhuybrecht","webp","Gil Huybrecht"],["capacity","capacity","webp","Capacity"],["framesforfuture","framesforfuture","webp","Frames For Future"],["designembraced","designembraced","webp","Design Embraced"],["grow-paris","grow-paris","webp","GROW Paris 2.5"],["whenyouthinkofhome","whenyouthinkofhome","webp","When You Think of Home"],["ccccccc-2","ccccccc-09-06-2019","webp","CCCCCCC"],["ensembliers","ensembliers","webp","Les Ensembliers"],["shepper","shepper","webp","Shepper"],["plenaire","plenaire","webp","Plenaire"],["stereo","stereoca","webp","Stereo"],["vadimtyurin","vadimtyurin","webp","Vadim Tyurin"],["mono","Mono","webp","Mono"],["martin-gorol","Martin-Gorol","webp","Martin Gorol"],["bookclub","bookclub","webp","Bookclub"],["maze","Maze","webp","Maze"],["bedtime-stories","Bedtime-Stories","webp","Bedtime Stories"],["izi","izi","webp","izi"],["uscreen","uscreen","webp","Uscreen"],["moose","Moose","webp","Moose"],["dareit","Dare-IT","webp","Dare IT"],["ueno-store","ueno-store","webp","Ueno Store"],["hacketh","Hacketh","webp","Hacketh"],["drcash","drcash","webp","dr.cash"],["studiotale","Studiotale","webp","Studiotale"],["prisma","Prisma","webp","Prisma"],["timo-kramp-design","Timo-Kramp","webp","Timo Kramp"],["openinvest","OpenInvest","webp","OpenInvest"],["patchproperty","Patch","webp","Patch"],["plasso-3","plasso-14-05-2018","webp","Plasso"],["plasso-storefront","plasso_storefront","webp","Plasso Storefront"],["waitlyst","waitlyst","webp","Waitlyst"],["amio","Amio","webp","Amio"],["aerolab-2","Aerolab-14-05-2018","webp","Aerolab"],["ux-masterclass","UX-Design-Masterclass","webp","UX Design Masterclass"],["ceremony-coffee","Ceremony-Coffee-Roasters","webp","Ceremony Coffee Roasters"],["avocode","avocode","webp","Avocode"],["redpen-io","redpen","webp","Red Pen"],["affinity-photo","affinity-photo","webp","Affinity Photo"],["wildcard","wilcard","webp","Wildcard"],["pixelmator-for-mac","pixelmator","webp","Pixelmator for Mac"],["flat-io","flat","webp","Flat"],["now-spotify","now","webp","Now - Spotify"],["apple-store","apple-store","webp","Apple"],["pistats-io","Pistats","webp","Pistats"],["reflection-io","reflection","webp","Reflection"],["triip-me","triipme","webp","Triip"],["musixmatch-apps","Musixmatch","webp","Musixmatch Apps"],["clearbit","Clearbit","webp","Clearbit"],["davinci-apps","davinci","webp","DaVinci Apps"],["wakatime","wakatime","webp","WakaTime"],["mockuuups","Mockuuups","webp","Mockuuups"],["wonders","Wonders","webp","Wonders"],["neubible","neubible","webp","NeuBible"],["seeflo","Seeflo","webp","Seeflo"],["prottapp","prott","webp","prottapp"],["relay-io","relay-io","webp","Relay"],["blocsapp","blocs","webp","Blocs"],["nucleoapp","nucleo","webp","Nucleo"],["jackie-tran-anh","jackie","webp","Jackie Tran Anh"],["pixate","pixate","webp","Pixate"],["marvelapp","marvelapp","webp","Marvel Prototyping"],["fiftythree-think","FiftyThree-Think","webp","Think with Paper by FiftyThree"],["fiftythree","FiftyThree","webp","FiftyThree"],["wake-io","wake-io","webp","Wake"],["heroku","heroku","webp","Heroku"],["smarticons","smarticons","webp","Smart Icons"],["lily-camera","lily-camera","webp","Lily - Camera"],["markly-app","markly","webp","Markly App"],["fantastical-2-for-mac","fantastical-apple-mac","webp","Fantastical 2 for Mac"],["day-one","day-one","webp","Day One"],["social-kit","social-kit","webp","Social Kit"],["ustwo","ustwo","webp","ustwo"],["sushio","sushio","webp","Sush.io"],["perspectivemockups","perspectivemockups","webp","Perspective Mockups"],["mixpanel","mixpanel","webp","Mixpanel"],["intercom","intercom-io","webp","Intercom"],["your-karma","your-karma","webp","Karma"],["kredo","kredo","webp","Kredo"],["creative-tim","creative-tim","webp","Creative Tim"],["fantastical-watch","fantastical-apple-watch","webp","Fantastical 2 for Apple Watch"],["spotify","spotify-uk","webp","Spotify"]];
+const AWW=[["oimachi","https://assets.awwwards.com/awards/submissions/2026/06/6a352a09d8ff8486117403.jpg","https://www.oimachi.co","Oimachi (SOTD)","https://www.awwwards.com/sites/oimachi"]];
+const CLUSTERS=[{"label":"ライト / ほぼ無彩色 / 余白たっぷり / トーナル","centroid":{"lightness":0.973,"sat":0.018,"contrast":0.355,"hue_spread":0.346,"density":0.043,"whitespace":0.804},"members":["a01","g07","g12","g15","g17","l06","l103","l108","l109","l11","l111","l118","l120","l124","l13","l134","l135","l138","l139","l140","l142","l143","l144","l146","l148","l15","l151","l153","l155","l157","l158","l159","l160","l161","l162","l170","l18","l188","l194","l196","l21","l22","l23","l27","l30","l37","l45","l46","l49","l53","l55","l57","l59","l64","l65","l69","l74","l86","l88","l91"],"id":"c1","short":"静かな余白"},{"label":"ライト / ほぼ無彩色 / 余白ふつう / パンチ強","centroid":{"lightness":0.924,"sat":0.033,"contrast":0.673,"hue_spread":0.146,"density":0.046,"whitespace":0.55},"members":["g01","g05","g11","l02","l08","l10","l117","l12","l127","l128","l133","l145","l154","l156","l164","l166","l168","l171","l172","l175","l176","l178","l180","l181","l184","l189","l19","l190","l192","l195","l197","l199","l200","l24","l25","l28","l31","l34","l38","l41","l43","l51","l58","l63","l71","l75","l80","l84","l92","l93","l96","l99"],"id":"c2","short":"明快コントラスト"},{"label":"ライト / ほぼ無彩色 / 密 / パンチ強","centroid":{"lightness":0.893,"sat":0.044,"contrast":0.617,"hue_spread":0.589,"density":0.069,"whitespace":0.524},"members":["g06","g13","g18","l03","l04","l05","l07","l106","l114","l121","l126","l129","l131","l132","l136","l14","l141","l147","l17","l173","l179","l182","l185","l193","l204","l206","l208","l26","l33","l35","l36","l50","l56","l61","l68","l79","l82","l94","l95","l97","l98"],"id":"c3","short":"情報密度"},{"label":"ライト / 多色・高彩度 / 密","centroid":{"lightness":0.76,"sat":0.551,"contrast":0.498,"hue_spread":0.133,"density":0.043,"whitespace":0.423},"members":["l100","l101","l130","l150","l169","l177","l187","l191","l198","l202","l203","l32","l39","l47","l60","l76","l77","l78","l83","l90"],"id":"c4","short":"カラフル"},{"label":"ダーク / 差し色あり / 余白ふつう","centroid":{"lightness":0.167,"sat":0.081,"contrast":0.554,"hue_spread":0.381,"density":0.053,"whitespace":0.566},"members":["g08","g09","g14","g16","l01","l09","l102","l105","l107","l113","l115","l116","l119","l122","l123","l125","l16","l165","l167","l174","l183","l205","l207","l29","l40","l52","l54","l62","l67","l72","l81","l85","l89"],"id":"c5","short":"ダーク・静"},{"label":"ダーク / 多色・高彩度 / 余白たっぷり / トーナル","centroid":{"lightness":0.129,"sat":0.399,"contrast":0.337,"hue_spread":0.16,"density":0.042,"whitespace":0.834},"members":["g02","g03","g04","g10","l104","l110","l112","l137","l149","l152","l163","l186","l20","l201","l42","l44","l48","l66","l70","l73","l87"],"id":"c6","short":"ダーク・鮮色"}];
+
+const items=[];
+GODLY.forEach((r,i)=>items.push({id:"g"+String(i+1).padStart(2,"0"),src:"GODLY",
+  thumb:"https://cdn.godly.design/sites/"+r[0]+"/thumbnail.webp",
+  alt:"https://cdn.godly.design/sites/"+r[0]+"/hero-desktop.webp",
+  site:r[1],name:r[2]}));
+LAPA.forEach((r,i)=>items.push({id:"l"+String(i+1).padStart(2,"0"),src:"LAPA",
+  thumb:"https://cdn.lapa.ninja/assets/images/2x/"+r[1]+"-thumb."+r[2],
+  site:"https://www.lapa.ninja/post/"+r[0]+"/",name:r[3]}));
+AWW.forEach((r,i)=>items.push({id:"a"+String(i+1).padStart(2,"0"),src:"AWWWARDS",
+  thumb:r[1],site:r[2],name:r[3]}));
+const byId=Object.fromEntries(items.map(i=>[i.id,i]));
+
+const ROLES=["骨格","色","文字"];
+const ROLE_HINT={"骨格":"構図・余白のリズム","色":"配色のロジック","文字":"タイポの態度"};
+const MAX=ROLES.length;
+
+// 選択状態: {骨格:id, 色:id, 文字:id}
+let sel={};
+const KEY="refs-picks-v2";
+const st=()=>document.getElementById("st");
+function setStatus(m,c){const e=st();e.textContent=m;e.className="status"+(c?" "+c:"");}
+
+/* ---------- 枠の表示 ---------- */
+// インラインの onclick は使わない（属性の中で引用符を重ねると壊れやすい）。
+// data-* に持たせて、描画後にイベントを委譲で張る。
+function thumbHTML(it){
+  if(!it) return '<span class="pic empty"></span>';
+  return '<span class="pic" data-reveal="'+it.id+'" title="一覧で表示">'+
+    '<img loading="lazy" referrerpolicy="no-referrer" src="'+it.thumb+'"'+
+    (it.alt?' data-alt="'+it.alt+'" onerror="fallback(this)"':'')+' alt=""></span>';
+}
+function renderSlots(){
+  const box=document.getElementById("slots");
+  if(!box) return;                       // 表示は提案パネルに一本化した
+  box.innerHTML=ROLES.map(r=>{
+    const id=sel[r], it=id?byId[id]:null;
+    // 枠が空になったら AI タグも消す（外した枠に AI と出ていると紛らわしい）
+    const isAI=!!(it&&aiReasons&&aiReasons.some(p=>p.role===r));
+    return '<div class="slot'+(it?' filled':'')+(isAI?' ai':'')+'">'+
+      '<span class="dot"></span>'+
+      thumbHTML(it)+
+      '<span class="body">'+
+        '<span class="role">'+r+(r==="骨格"?"":"（任意）")+(isAI?' <span class="aitag">AI</span>':'')+'</span>'+
+        '<span class="val">'+(it?it.name:ROLE_HINT[r])+'</span>'+
+      '</span>'+
+      (it?'<button class="x" data-unset="'+r+'" title="この枠を外す">×</button>':'')+
+      '</div>';
+  }).join("");
+  bindSlots();
+}
+
+function bindSlots(){
+  const box=document.getElementById("slots");
+  if(!box) return;
+  box.querySelectorAll("[data-unset]").forEach(function(b){
+    b.onclick=function(){ unset(b.dataset.unset); };
+  });
+  box.querySelectorAll("[data-reveal]").forEach(function(p){
+    p.onclick=function(){ reveal(p.dataset.reveal); };
+  });
+}
+
+// 枠のサムネを押すと、その ref が入っている系統を開いて位置を示す
+function reveal(id){
+  const c=CLUSTERS.find(c=>c.members.includes(id));
+  if(!c) return;
+  toDetail(c.id);
+  const card=document.querySelector('#grid .card[data-id="'+id+'"]');
+  if(card){
+    card.scrollIntoView({behavior:"smooth",block:"center"});
+    card.style.outline="2px solid var(--pick)";
+    setTimeout(function(){card.style.outline=""},1600);
+  }
+}
+function unset(role){ delete sel[role]; sync(); }
+
+/* ---------- 段階1 ---------- */
+function renderCats(){
+  document.getElementById("cats").innerHTML=CLUSTERS.map(c=>{
+    const pics=c.members.slice(0,4).map(id=>byId[id]).filter(Boolean);
+    return '<div class="cat" onclick="toDetail(\''+c.id+'\')">'+
+      '<div class="montage">'+pics.map(p=>'<div><img loading="lazy" referrerpolicy="no-referrer" src="'+p.thumb+'"'+
+        (p.alt?' data-alt="'+p.alt+'" onerror="fallback(this)"':'')+' alt=""></div>').join("")+'</div>'+
+      '<div class="body"><div class="title">'+(c.short||c.label)+'</div>'+
+      '<div class="desc">'+c.label+'</div>'+
+      '<div class="n">'+c.members.length+' 件</div></div></div>';
+  }).join("");
+}
+
+/* ---------- 段階2 ---------- */
+let cur=null;
+function toDetail(cid){
+  cur=CLUSTERS.find(c=>c.id===cid);
+  document.getElementById("cname").textContent=cur.short||cur.label;
+  document.getElementById("cmeta").textContent=cur.members.length+" 件";
+  document.getElementById("grid").innerHTML=cur.members.map(id=>{
+    const it=byId[id]; if(!it) return "";
+    return '<div class="card" data-id="'+it.id+'">'+
+      '<div class="badge"></div>'+
+      '<button class="ext zoom" data-zoom="'+it.id+'">拡大</button>'+
+      '<div class="thumb"><img loading="lazy" referrerpolicy="no-referrer" src="'+it.thumb+'"'+
+        (it.alt?' data-alt="'+it.alt+'" onerror="fallback(this)"':'')+' alt=""></div>'+
+      '<div class="meta"><span class="id">'+it.id+'</span>'+
+      '<span class="name">'+it.name+'</span><span class="src">'+it.src+'</span></div></div>';
+  }).join("");
+  document.querySelectorAll("#grid .card").forEach(card=>{
+    card.onclick=e=>{
+      if(e.target.closest("a.ext")) return;
+      if(e.target.dataset && e.target.dataset.zoom){ e.stopPropagation(); openLB(e.target.dataset.zoom); return; }
+      if(e.target.classList.contains("badge")){ cycle(card.dataset.id); return; }
+      toggle(card.dataset.id);
+    };
+  });
+  paint();
+  document.getElementById("v1").classList.add("hidden");
+  document.getElementById("v2").classList.remove("hidden");
+  scrollTo(0,0);
+}
+function toCats(){
+  document.getElementById("v2").classList.add("hidden");
+  document.getElementById("v1").classList.remove("hidden");
+  scrollTo(0,0);
+}
+function fallback(img){ if(img.dataset.alt){img.src=img.dataset.alt;img.removeAttribute("data-alt");} }
+
+/* ---------- 選択 ---------- */
+function roleOf(id){ return ROLES.find(r=>sel[r]===id)||null; }
+function toggle(id){
+  const r=roleOf(id);
+  if(r){ delete sel[r]; sync(); return; }
+  // 「追加する」から来た場合はその枠へ。そうでなければ空いている先頭へ。
+  const target=(pendingRole && !sel[pendingRole]) ? pendingRole : ROLES.find(x=>!sel[x]);
+  if(!target){ setStatus("3枠すべて埋まっています。外してから選んでください","ng"); return; }
+  sel[target]=id; pendingRole=null; sync();
+}
+function cycle(id){
+  const from=roleOf(id); if(!from) return;
+  const to=ROLES[(ROLES.indexOf(from)+1)%ROLES.length];
+  const other=sel[to];                 // 次の枠が埋まっていれば入れ替える
+  sel[to]=id;
+  if(other) sel[from]=other; else delete sel[from];
+  sync();
+}
+function paint(){
+  document.querySelectorAll("#grid .card").forEach(c=>{
+    const r=roleOf(c.dataset.id);
+    c.classList.toggle("on",!!r);
+    if(r){ c.dataset.role=r; c.querySelector(".badge").textContent=r; }
+    else { delete c.dataset.role; }
+  });
+}
+function clearAll(){ sel={}; sync(); }
+
+function sync(){ renderSlots(); renderProposal(); paint(); save(); }
+
+/* ---------- 保存 ---------- */
+let timer=null;
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(sel));
+  setStatus("保存中…");
+  clearTimeout(timer); timer=setTimeout(push,400);
+}
+async function push(){
+  const picks=ROLES.filter(r=>sel[r]).map(r=>{
+    const it=byId[sel[r]];
+    return {role:r,id:it.id,src:it.src,name:it.name,site:it.site,thumb:it.thumb};
+  });   // by:"ai" は保存しない = 保存された時点で本人の選択
+  try{
+    const res=await fetch("/api/picks",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({picks})});
+    if(!res.ok) throw 0;
+    setStatus(picks.length?picks.length+" 件をディスクに保存済み":"未選択",picks.length?"ok":"");
+  }catch(e){ setStatus("保存できず（サーバ未起動？）","ng"); }
+}
+
+async function load(){
+  try{
+    const r=await fetch("/api/picks",{cache:"no-store"});
+    if(!r.ok) throw 0;
+    const d=await r.json();
+    (d.picks||[]).forEach(p=>{ if(p.role&&byId[p.id]) sel[p.role]=p.id; });
+    const ai=(d.picks||[]).filter(p=>p.by==="ai");
+    if(ai.length){ showProposal(ai); setStatus("未確定"); }
+    else setStatus(Object.keys(sel).length?"保存済みを読み込み":"未選択");
+  }catch(e){
+    try{ sel=JSON.parse(localStorage.getItem(KEY)||"{}"); }catch(_){ sel={}; }
+    setStatus("サーバ未接続・ローカル保存のみ","ng");
+  }
+  renderCats(); renderSlots();
+}
+/* ---------- AIに選んでもらう ---------- */
+// 選定は Claude Code 側でやる。ここは依頼を書き出し、戻ってきた提案を見せるだけ。
+let aiReasons=null;
+
+async function askAI(){
+  const brief=document.getElementById("brief").value.trim();
+  if(!brief){ aimsg("作りたいものを一言書いてください",""); return; }
+  const btn=document.querySelector("button.ask");
+  btn.disabled=true;
+  try{
+    const r=await fetch("/api/assist",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({brief})});
+    if(!r.ok) throw 0;
+    const d=await r.json();
+    if(d.job===undefined){
+      aimsg("サーバが古いコードのままです。serve.py を再起動してください","");
+      btn.disabled=false; return;
+    }
+    if(!d.job){ aimsg("起動できませんでした: "+(d.message||""),""); btn.disabled=false; return; }
+    await watch("assist","選んでいます",async function(){
+      // picks.json が書き換わっているので読み直して提案として出す
+      const p=await (await fetch("/api/picks",{cache:"no-store"})).json();
+      const ai=(p.picks||[]).filter(x=>x.by==="ai");
+      if(ai.length){ showProposal(ai); aimsg("選びました","ok"); }
+      else aimsg("結果が書き込まれませんでした","");
+    });
+  }catch(e){ aimsg("サーバに届きませんでした（serve.py を再起動してください）",""); }
+  btn.disabled=false;
+}
+function aimsg(t,c){ const e=document.getElementById("aimsg"); e.textContent=t; e.className=c; }
+
+// ジョブの終了まで待って、経過を出し続ける
+async function watch(name,label,onDone){
+  const t0=Date.now();
+  for(;;){
+    await new Promise(r=>setTimeout(r,2000));
+    let s;
+    try{ s=await (await fetch("/api/job?name="+name,{cache:"no-store"})).json(); }
+    catch(e){ continue; }
+    const sec=Math.round((Date.now()-t0)/1000);
+    if(s.status==="running"){ aimsg(label+"…（"+sec+"秒）",""); continue; }
+    if(s.status==="error"){ aimsg("失敗しました: "+(s.message||"").slice(0,200),""); return; }
+    if(s.status==="done"){ await onDone(s); return; }
+  }
+}
+
+function showProposal(picks){
+  aiReasons=picks;
+  sel={};
+  picks.forEach(function(p){ if(byId[p.id]) sel[p.role]=p.id; });
+  renderSlots();
+  renderProposal();
+}
+
+// 3枠すべてを常に出す。埋まっていれば ref とその理由、空なら「追加する」。
+// AI提案でも自分で選んだ場合でも同じ見た目にする。
+function renderProposal(){
+  const any = ROLES.some(function(r){ return sel[r]; });
+  const box = document.getElementById("proposal");
+  if(!any && !aiReasons){ box.classList.remove("on"); return; }
+  box.classList.add("on");
+  document.getElementById("ptitle").textContent = aiReasons ? "おまかせの結果" : "選択中";
+  document.getElementById("ptag").style.display = aiReasons ? "" : "none";
+  document.getElementById("paccept").style.display = aiReasons ? "flex" : "none";
+
+  document.getElementById("reasons").innerHTML = ROLES.map(function(r){
+    const it = sel[r] ? byId[sel[r]] : null;
+    const opt = "";
+    if(!it){
+      return '<div class="pcard empty" data-add="' + r + '" title="この枠に追加する">' +
+        '<span class="pic empty"></span>' +
+        '<span class="txt">' +
+          '<span class="r">' + r + opt + '</span>' +
+          '<span class="n dim">＋ 追加</span>' +
+          '<span class="why">押して1枚選ぶとここに入ります</span>' +
+        '</span></div>';
+    }
+    const info = aiReasons ? aiReasons.find(function(x){ return x.role === r; }) : null;
+    return '<div class="pcard">' +
+      '<span class="pic" data-zoom="' + it.id + '" title="拡大する">' +
+        '<img loading="lazy" referrerpolicy="no-referrer" src="' + it.thumb + '"' +
+        (it.alt ? ' data-alt="' + it.alt + '" onerror="fallback(this)"' : '') + ' alt=""></span>' +
+      '<span class="txt">' +
+        '<span class="r">' + r + '</span>' +
+        '<span class="n">' + it.name + '</span>' +
+        '<span class="why">' + (info && info.reason ? info.reason : "") + '</span>' +
+        '<span class="acts"><button data-zoom="' + it.id + '">拡大</button></span>' +
+      '</span>' +
+      '<button class="x" data-unset="' + r + '" title="この枠を外す">×</button>' +
+      '</div>';
+  }).join("");
+
+  const box2 = document.getElementById("reasons");
+  box2.querySelectorAll("[data-unset]").forEach(function(b){
+    b.onclick = function(e){ e.stopPropagation(); unset(b.dataset.unset); };
+  });
+  box2.querySelectorAll("[data-zoom]").forEach(function(b){
+    b.onclick = function(e){ e.stopPropagation(); openLB(b.dataset.zoom); };
+  });
+  box2.querySelectorAll("[data-add]").forEach(function(b){
+    b.onclick = function(){ addRole(b.dataset.add); };
+  });
+}
+
+// 空き枠に足す。次にカードを押したら「その枠」に入る。
+let pendingRole = null;
+function addRole(r){
+  pendingRole = r;
+  toCats();
+  aimsg("1枚選ぶと「" + r + "」に入ります", "ok");
+}
+
+/* ---------- 拡大表示 ---------- */
+function openLB(id){
+  const it = byId[id];
+  if(!it) return;
+  document.getElementById("lbimg").src = it.thumb;
+  document.getElementById("lbname").textContent = it.name;
+  document.getElementById("lb").classList.add("on");
+}
+function closeLB(){ document.getElementById("lb").classList.remove("on"); }
+addEventListener("keydown", function(e){ if(e.key === "Escape") closeLB(); });
+function acceptAI(){
+  aiReasons=null;               // by:"ai" が外れる = 本人の選択として確定
+  sync();
+  aimsg("決まりました。外したり足したりもできます","ok");
+}
+function rejectAI(){
+  sel={}; aiReasons=null; pendingRole=null;
+  sync();
+  aimsg("取り消しました","");
+}
+
+/* ---------- 自由度 ---------- */
+// axes.md と同じ重み。軽い軸から順に、重み合計が N を超えない範囲まで解放する。
+const AXES=[["装飾量",2],["階層の跳ね",4],["コントラスト",9],["密度",15],["地の明度",20],["主役",22],["構図",28]];
+function released(n){
+  const out=[]; let acc=0;
+  for(const [name,wt] of AXES){ acc+=wt; if(acc<=n) out.push(name); else break; }
+  return out;
+}
+function renderFreedom(){
+  const n=+document.getElementById("freedom").value;
+  document.getElementById("fv").textContent=n;
+  const free=released(n);
+  document.getElementById("axes").innerHTML=AXES.map(([name])=>
+    '<span class="ax'+(free.includes(name)?' free':'')+'">'+name+'</span>').join("");
+  const fixed=AXES.map(a=>a[0]).filter(a=>!free.includes(a));
+  document.getElementById("fhint").innerHTML=
+    (free.length?'<b>変わる</b>: '+free.join("・"):'<b>変わらない</b>')+
+    '<br>'+(fixed.length?'<b>そのまま</b>: '+fixed.join("・"):'すべて変わる');
+}
+document.getElementById("freedom").oninput=renderFreedom;
+
+async function decide(){
+  if(!sel["骨格"]){ msg("骨格枠が空です。先に1枚選んでください","" ); return; }
+  const n=+document.getElementById("freedom").value;
+  const body={
+    freedom:n, released:released(n),
+    variants:+document.getElementById("variants").value,
+    target:document.getElementById("target").value,
+    picks:ROLES.filter(r=>sel[r]).map(r=>({role:r,id:sel[r],name:byId[sel[r]].name,site:byId[sel[r]].site}))
+  };
+  const go=document.getElementById("go");
+  go.disabled=true;
+  try{
+    const res=await fetch("/api/request",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(body)});
+    if(!res.ok) throw 0;
+    const d=await res.json();
+    if(d.job===undefined){
+      msg("サーバが古いコードのままです。serve.py を再起動してください","");
+      go.disabled=false; return;
+    }
+    if(!d.job){ msg("起動できませんでした: "+(d.message||""),""); go.disabled=false; return; }
+    const t0=Date.now();
+    for(;;){
+      await new Promise(r=>setTimeout(r,3000));
+      let s;
+      try{ s=await (await fetch("/api/job?name=generate",{cache:"no-store"})).json(); }
+      catch(e){ continue; }
+      const sec=Math.round((Date.now()-t0)/1000);
+      if(s.status==="running"){ msg("案をつくっています…（"+sec+"秒）",""); continue; }
+      if(s.status==="error"){ msg("失敗しました: "+(s.message||"").slice(0,160),""); break; }
+      if(s.status==="done"){
+        msg("できました。","ok");
+        document.getElementById("reqmsg").insertAdjacentHTML("beforeend",
+          ' <a href="compare-gen.html" style="color:var(--pick);font-weight:700">生成案を見る →</a>');
+        location.href="compare-gen.html";
+        break;
+      }
+    }
+  }catch(e){ msg("サーバに届きませんでした","" ); }
+  go.disabled=false;
+}
+function msg(t,c){ const e=document.getElementById("reqmsg"); e.textContent=t; e.className=c; }
+
+renderFreedom();
+load();
+</script>
+</body>
+</html>

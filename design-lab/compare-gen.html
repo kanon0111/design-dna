@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DNA生成案 比較 ｜ Cafe Little Leaf</title>
+<style>
+/* 比較用ページ。デザイン案そのものではないので中立なグレーの画面にする */
+*{box-sizing:border-box}
+body{margin:0;padding:30px 26px 64px;background:#14161a;color:#e6e8ec;
+  font-family:"Yu Gothic",YuGothic,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
+  font-size:14px;line-height:1.7}
+a{color:#8fb8ff}
+a:hover{color:#b6d0ff}
+header{max-width:1600px;margin:0 auto 26px;padding-bottom:18px;border-bottom:1px solid #2a2e36;
+  display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+h1{margin:0;font-size:17px;font-weight:600;letter-spacing:.02em}
+.sub{margin:5px 0 0;color:#878d99;font-size:12px}
+.meta{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-size:11px;padding:4px 11px;border-radius:20px;border:1px solid #343945;color:#b8bec9}
+.chip b{color:#e6e8ec;font-weight:600}
+.tools{display:flex;align-items:center;gap:8px}
+.tools button{min-height:34px;padding:0 15px;border:1px solid #343945;border-radius:6px;
+  background:#1c1f26;color:#b8bec9;font-family:inherit;font-size:12px;cursor:pointer}
+.tools button[aria-pressed=true]{border-color:#4a90e2;background:#23304a;color:#dceaff}
+
+.grid{max-width:1600px;margin:0 auto;display:grid;gap:22px;
+  grid-template-columns:repeat(3,minmax(0,1fr))}
+figure{margin:0;background:#1a1d23;border:1px solid #2a2e36;border-radius:10px;overflow:hidden}
+figcaption{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #2a2e36}
+.name{font-size:13px;font-weight:600;flex:1}
+.open{font-size:12px;text-decoration:none}
+.viewport{height:620px;overflow:hidden;background:#000}
+@media (max-width:1100px){ .viewport{height:460px} }
+@media (max-width:820px){
+  .grid{grid-template-columns:1fr}
+  .viewport{height:400px}
+}
+.viewport iframe{width:1280px;height:2480px;border:0;transform:scale(.484);
+  transform-origin:0 0;display:block}
+.note{margin:0;padding:12px 14px;border-top:1px solid #2a2e36;color:#a2a8b4;font-size:12px}
+.note b{color:#e6e8ec}
+.act{padding:0 14px 14px}
+.pick{width:100%;min-height:38px;border:1px solid #3ddc84;border-radius:6px;
+  background:none;color:#3ddc84;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.pick:hover{background:#3ddc84;color:#0b0b0c}
+.pick.on{background:#3ddc84;color:#0b0b0c}
+#done{max-width:1600px;margin:18px auto 0;font-size:12.5px;color:#3ddc84;min-height:1.4em}
+footer{max-width:1600px;margin:30px auto 0;padding-top:18px;border-top:1px solid #2a2e36;
+  color:#878d99;font-size:12px}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>DNA生成案 — Cafe Little Leaf</h1>
+    <p class="sub">骨格 = Pryzm ／ 色 = Espace Go ／ 自由度 50%（3案とも同じ予算で、解放する軸をずらしている）</p>
+    <div class="meta" style="margin-top:9px">
+      <span class="chip">固定: <b>UIは無彩色・色はコンテンツのみ</b></span>
+      <span class="chip">DNA: <b>純白・アクセント色を使わない</b></span>
+      <span class="chip">解放: <b>案ごとに別の軸が動く</b></span>
+    </div>
+  </div>
+  <div class="tools">
+    <button type="button" id="w" aria-pressed="true" onclick="setW(1280)">デスクトップ</button>
+    <button type="button" id="m" aria-pressed="false" onclick="setW(430)">モバイル</button>
+  </div>
+</header>
+
+<div class="grid">
+
+  <figure>
+    <figcaption>
+      <span class="name">案A　地の明度をライト基調へ振る</span>
+      <a class="open" href="gen/a/" target="_blank" rel="noopener">開く ↗</a>
+    </figcaption>
+    <div class="viewport"><iframe src="gen/a/" title="案A" loading="lazy"></iframe></div>
+    <p class="note"><b>解放</b> 装飾2＋階層4＋コントラスト9＋密度15＋<b>地の明度20</b>＝50／<b>固定</b> 構図・主役<br>
+      地を反転してライト基調に。黒は営業時間の帯だけ。コントラストもトーナルへ落とした。</p>
+    <div class="act"><button class="pick" data-v="a" onclick="decide(this)">この案で実装する</button></div>
+  </figure>
+
+  <figure>
+    <figcaption>
+      <span class="name">案B　構図を崩しグリッドへ振る</span>
+      <a class="open" href="gen/b/" target="_blank" rel="noopener">開く ↗</a>
+    </figcaption>
+    <div class="viewport"><iframe src="gen/b/" title="案B" loading="lazy"></iframe></div>
+    <p class="note"><b>解放</b> <b>構図28</b>＋密度15＋階層4＋装飾2＝49／<b>固定</b> 主役・地の明度・コントラスト<br>
+      12列グリッドを張り、段ごとに開始位置をずらす。メニューは階段状。密度は密、階層は極端。</p>
+    <div class="act"><button class="pick" data-v="b" onclick="decide(this)">この案で実装する</button></div>
+  </figure>
+
+  <figure>
+    <figcaption>
+      <span class="name">案C　主役を色面へ・明度を半々へ</span>
+      <a class="open" href="gen/c/" target="_blank" rel="noopener">開く ↗</a>
+    </figcaption>
+    <div class="viewport"><iframe src="gen/c/" title="案C" loading="lazy"></iframe></div>
+    <p class="note"><b>解放</b> <b>主役22</b>＋<b>地の明度20</b>＋階層4＋装飾2＝48／<b>固定</b> 構図・密度・コントラスト<br>写真も文字も主役から降ろし、色の面が画面を支配する。黒と生成りが同量で交互に来る。</p>
+    <div class="act"><button class="pick" data-v="c" onclick="decide(this)">この案で実装する</button></div>
+  </figure>
+
+</div>
+
+<p id="done"></p>
+
+<footer>
+  比較対象（旧・曖昧な指示から出した3案）: <a href="compare.html">compare.html</a>　／
+  選別画面: <a href="picker.html">picker.html</a>
+</footer>
+
+<script>
+var LABELS={a:"地の明度をライト基調へ",b:"構図を崩しグリッドへ",c:"主役を色面へ・明度を半々へ"};
+async function decide(btn){
+  var v=btn.dataset.v;
+  try{
+    var r=await fetch("/api/decision",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({variant:v,path:"gen/"+v+"/",label:LABELS[v],freedom:50})});
+    if(!r.ok) throw 0;
+    document.querySelectorAll(".pick").forEach(function(b){
+      b.classList.toggle("on",b===btn);
+      b.textContent = b===btn ? "この案で実装する（選択中）" : "この案で実装する";
+    });
+    document.getElementById("done").textContent =
+      "案"+v.toUpperCase()+" を採用として書き出しました。チャットで「実装して」と一声かけてください。";
+  }catch(e){
+    document.getElementById("done").textContent="サーバに届きませんでした（serve.py を再起動してください）";
+  }
+}
+(async function(){
+  try{
+    var d=await (await fetch("/api/decision",{cache:"no-store"})).json();
+    if(d && d.variant){
+      var b=document.querySelector('.pick[data-v="'+d.variant+'"]');
+      if(b){b.classList.add("on");b.textContent="この案で実装する（選択中）";}
+    }
+  }catch(e){}
+})();
+
+function setW(px){
+  document.querySelectorAll('.viewport').forEach(function(v){
+    var f=v.querySelector('iframe');
+    f.style.width=px+'px';
+    f.style.transform='scale('+(v.clientWidth/px)+')';
+    f.style.height=(px>=1000?2480:3600)+'px';
+  });
+  document.getElementById('w').setAttribute('aria-pressed',px>=1000);
+  document.getElementById('m').setAttribute('aria-pressed',px<1000);
+}
+addEventListener('load',function(){setW(1280)});
+addEventListener('resize',function(){
+  setW(document.getElementById('m').getAttribute('aria-pressed')==='true'?430:1280);
+});
+</script>
+</body>
+</html>

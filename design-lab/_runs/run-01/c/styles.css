@@ -1,0 +1,84 @@
+/* 案C — 自由度50% / 解放: 主役22＋地の明度20＋階層4＋装飾2 ＝ 48
+   固定: 構図(左寄せ非対称) / 密度(疎) / コントラスト(高)
+   振り方: 主役を【色面】へ。写真でも文字でもなく、色の面そのものが画面を支配する。
+           地の明度は【半々で切り替え】— 黒と生成りが同量で交互に来る。
+           階層はフラット、装飾は装飾的（色面が装飾を兼ねる）。 */
+
+:root{
+  --ink:#0b0b0b;
+  --paper:#f2f0e9;
+  --mute:#8a8a85;
+  --mute-d:rgba(11,11,11,.55);
+  --c-magenta:#d94f7a;
+  --c-amber:#d9962f;
+  --c-sky:#7ba7c7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--ink);color:var(--paper);
+  font-family:"Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  font-size:15px;line-height:1.8;-webkit-font-smoothing:antialiased;
+}
+
+/* 階層=フラット -> 見出しと本文の差を小さく保つ */
+.label{
+  font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--mute);margin-bottom:18px;
+}
+h1,h2,h3{font-size:21px;font-weight:700;letter-spacing:-.005em;line-height:1.4}
+.wrap{max-width:1240px;margin:0 auto;padding:0 40px}
+section{padding:120px 0}                 /* 密度=疎(固定) */
+
+/* 明度=半々。黒と生成りが同じ量で交互に来る */
+.on-paper{background:var(--paper);color:var(--ink)}
+.on-paper .label{color:var(--mute-d)}
+
+/* ---- 主役=色面。ヒーローは巨大な色の帯で構成する ---- */
+.hero{padding:0}
+.bands{display:grid;grid-template-columns:repeat(4,1fr);height:62vh;min-height:400px}
+.bands div{height:100%}
+.b1{background:var(--c-magenta)}
+.b2{background:var(--c-amber)}
+.b3{background:var(--c-sky)}
+.b4{background:var(--paper)}
+.hero-text{padding:56px 0 96px}
+.hero-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:56px;align-items:start}
+.hero-text h1{font-size:clamp(1.6rem,3.4vw,2.4rem);line-height:1.25}
+.hero-text .sub{color:var(--mute);font-size:14px;max-width:26em}
+
+/* ---- 営業時間: 生成り面 ---- */
+.hours-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:56px;align-items:start}
+.hours dl{display:grid;grid-template-columns:auto 1fr;gap:14px 28px;font-size:15px}
+.hours dt{color:var(--mute-d)}
+.hours dd{text-align:right;font-variant-numeric:tabular-nums}
+
+/* ---- メニュー: 色面が主役。文字は面に添える ---- */
+.items{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:40px}
+.item .face{aspect-ratio:1/1.15;margin-bottom:18px}
+.item .face.m{background:var(--c-magenta)}
+.item .face.a{background:var(--c-amber)}
+.item .face.s{background:var(--c-sky)}
+.item p{color:var(--mute);font-size:14px;max-width:22em;margin-top:6px}
+
+/* ---- 予約: 生成り面 + 色面のブロック ---- */
+.reserve-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:56px;align-items:center}
+.reserve .slab{aspect-ratio:16/7;background:var(--c-magenta)}
+.btn{
+  display:inline-block;border:1px solid var(--ink);background:none;color:var(--ink);
+  font:inherit;font-size:14px;letter-spacing:.05em;padding:16px 44px;border-radius:0;
+  cursor:pointer;transition:.18s;margin-top:26px;
+}
+.btn:hover{background:var(--ink);color:var(--paper)}
+
+footer{padding:76px 0}
+.foot{display:grid;grid-template-columns:1.2fr 1fr;gap:56px;align-items:end}
+footer address{font-style:normal;font-size:14px;color:var(--mute);max-width:26em}
+footer .copy{font-size:12px;color:var(--mute);letter-spacing:.06em}
+
+@media (max-width:880px){
+  .hero-grid,.hours-grid,.reserve-grid,.foot{grid-template-columns:1fr;gap:28px;align-items:start}
+  .items{grid-template-columns:1fr}
+  .bands{height:38vh;min-height:240px}
+  section{padding:80px 0}
+  .wrap{padding:0 24px}
+}

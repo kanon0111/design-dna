@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>デザイン案 比較 ｜ Cafe Little Leaf</title>
+<style>
+/* 比較用ページ。デザイン案そのものではないので中立なグレーの画面にする */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 32px 28px 64px;
+  background: #14161a;
+  color: #e6e8ec;
+  font-family: "Yu Gothic", "YuGothic", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+a { color: #8fb8ff; }
+a:hover { color: #b6d0ff; }
+
+/* --- ヘッダー --- */
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1600px;
+  margin: 0 auto 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #2a2e36;
+}
+
+h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: 0.02em; }
+.sub { margin: 4px 0 0; color: #878d99; font-size: 12px; }
+
+.tools { display: flex; align-items: center; gap: 8px; }
+
+.tools button {
+  min-height: 34px;
+  padding: 0 16px;
+  border: 1px solid #343945;
+  border-radius: 6px;
+  background: #1c1f26;
+  color: #b8bec9;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tools button[aria-pressed="true"] {
+  border-color: #4a90e2;
+  background: #23304a;
+  color: #dceaff;
+}
+
+/* --- 3案グリッド --- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+figure { margin: 0; }
+
+figcaption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.name { font-size: 14px; font-weight: 600; }
+.open { font-size: 12px; text-decoration: none; white-space: nowrap; }
+
+/* 実寸のページを縮小表示する枠 */
+.viewport {
+  overflow: hidden;
+  border: 1px solid #2a2e36;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.viewport iframe {
+  border: 0;
+  transform-origin: top left;
+  pointer-events: none; /* 縮小表示なので操作は「開く」に任せる */
+}
+
+.note {
+  margin: 12px 0 0;
+  color: #878d99;
+  font-size: 12px;
+  line-height: 1.75;
+}
+
+@media (max-width: 1100px) {
+  .grid { grid-template-columns: 1fr; gap: 36px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Cafe Little Leaf — デザイン案 比較</h1>
+    <p class="sub">同じ内容で3方向。<a href="index.html">元の土台ページ</a></p>
+  </div>
+  <div class="tools">
+    <button type="button" data-w="1280" data-h="1560" aria-pressed="true">デスクトップ</button>
+    <button type="button" data-w="390" data-h="1500" aria-pressed="false">モバイル</button>
+  </div>
+</header>
+
+<p style="max-width:1600px;margin:0 auto 18px;font-size:12px;color:#878d99">
+  これは<b style="color:#e6e8ec">旧3案</b>（「温かみのある」等の曖昧な指示から出したもの）です。
+  DNAから生成した新しい3案は <a href="compare-gen.html">compare-gen.html</a>。
+</p>
+
+<div class="grid">
+
+  <figure>
+    <figcaption>
+      <span class="name">A. 温かみのあるナチュラル</span>
+      <a class="open" href="warm/" target="_blank" rel="noopener">開く ↗</a>
+    </figcaption>
+    <div class="viewport"><iframe src="warm/" title="案A 温かみのあるナチュラル" loading="lazy"></iframe></div>
+    <p class="note">明朝体・紙の粒感・葉のグリーン。行間を広めに取った読みもの寄りの構成。手作り感を出したいとき向き。</p>
+  </figure>
+
+  <figure>
+    <figcaption>
+      <span class="name">B. モダンでミニマル</span>
+      <a class="open" href="minimal/" target="_blank" rel="noopener">開く ↗</a>
+    </figcaption>
+    <div class="viewport"><iframe src="minimal/" title="案B モダンでミニマル" loading="lazy"></iframe></div>
+    <p class="note">ほぼモノクロ + ヘアラインのグリッド。全て左揃え、メニューは3カラムで連番。情報の見つけやすさが最優先。</p>
+  </figure>
+
+  <figure>
+    <figcaption>
+      <span class="name">C. 少し高級感のある感じ</span>
+      <a class="open" href="luxe/" target="_blank" rel="noopener">開く ↗</a>
+    </figcaption>
+    <div class="viewport"><iframe src="luxe/" title="案C 少し高級感のある感じ" loading="lazy"></iframe></div>
+    <p class="note">深い緑の地に真鍮色。左右対称・広い字間・飾り罫。単価を上げたい／夜も営業するような店に寄せた方向。</p>
+  </figure>
+
+</div>
+
+<script>
+// 各案を実寸で描画し、カラム幅に合わせて縮小して並べる
+var W = 1280, H = 1560;
+
+function layout() {
+  document.querySelectorAll('.viewport').forEach(function (v) {
+    var frame = v.querySelector('iframe');
+    var scale = v.clientWidth / W;
+    frame.style.width = W + 'px';
+    frame.style.height = H + 'px';
+    frame.style.transform = 'scale(' + scale + ')';
+    v.style.height = Math.round(H * scale) + 'px';
+  });
+}
+
+document.querySelectorAll('.tools button').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    W = Number(btn.dataset.w);
+    H = Number(btn.dataset.h);
+    document.querySelectorAll('.tools button').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b === btn));
+    });
+    layout();
+  });
+});
+
+window.addEventListener('resize', layout);
+layout();
+</script>
+
+</body>
+</html>

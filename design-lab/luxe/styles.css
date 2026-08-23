@@ -1,0 +1,241 @@
+/* =========================================================
+   C. 少し高級感のある感じ
+   深い緑がかったチャコールの地 + アイボリー。
+   アクセントは真鍮色ひとつ。左右対称・広い字間で落ち着かせる。
+   ========================================================= */
+
+:root {
+  --bg:      oklch(0.200 0.018 165);
+  --bg-lift: oklch(0.240 0.020 165);
+  --ivory:   oklch(0.940 0.012 85);
+  --mute:    oklch(0.700 0.014 85);
+  --brass:   oklch(0.760 0.075 88);
+  --brass-d: oklch(0.660 0.070 88);
+  --hair:    oklch(0.340 0.018 165);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 32px;
+  background: var(--bg);
+  color: var(--ivory);
+  font-family: "Cormorant Garamond", "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", serif;
+  font-size: 17px;
+  line-height: 1.95;
+  text-align: center;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--brass); }
+a:hover { color: var(--brass-d); }
+
+/* 小さなラテン文字ラベルはサンセリフ + 広い字間で */
+.eyebrow,
+.label,
+.copy {
+  font-family: "Jost", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
+  font-weight: 300;
+  text-transform: uppercase;
+}
+
+/* --- ヒーロー --- */
+
+.hero {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 120px 0 96px;
+}
+
+.eyebrow {
+  margin: 0 0 40px;
+  color: var(--brass);
+  font-size: 11px;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em; /* letter-spacing 分の右寄りを打ち消して中央に見せる */
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(46px, 8.5vw, 88px);
+  font-weight: 300;
+  line-height: 1.12;
+  letter-spacing: 0.02em;
+}
+
+/* 見出し下の飾り罫 */
+.ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 40px auto 0;
+  max-width: 320px;
+  color: var(--brass);
+}
+
+.ornament .hair {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--brass), transparent);
+}
+
+.lede {
+  margin: 36px 0 0;
+  color: var(--mute);
+  font-size: clamp(17px, 2.2vw, 21px);
+  font-style: italic;
+  font-weight: 300;
+}
+
+/* --- 共通ブロック --- */
+
+.block {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 64px 0;
+  border-top: 1px solid var(--hair);
+}
+
+.label {
+  margin: 0 0 40px;
+  color: var(--brass);
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+}
+
+/* --- 営業時間 --- */
+
+.hours {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px 64px;
+  margin: 0;
+}
+
+.hours dt {
+  margin-bottom: 6px;
+  color: var(--mute);
+  font-family: "Jost", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+}
+
+.hours dd {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- メニュー --- */
+
+.menu {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 48px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu li {
+  padding: 0 12px;
+  border-left: 1px solid var(--hair);
+}
+
+.menu li:first-child { border-left: none; }
+
+.menu h3 {
+  margin: 0 0 12px;
+  color: var(--brass);
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+}
+
+.menu p {
+  margin: 0;
+  color: var(--mute);
+  font-size: 15px;
+  line-height: 1.9;
+  text-wrap: pretty;
+}
+
+/* --- 予約 --- */
+
+.cta {
+  padding-bottom: 88px;
+}
+
+.cta-note {
+  margin: 0 0 32px;
+  color: var(--mute);
+  font-size: 16px;
+}
+
+.btn {
+  min-height: 54px;
+  padding: 0 56px;
+  border: 1px solid var(--brass);
+  border-radius: 0;
+  background: transparent;
+  color: var(--brass);
+  font-family: "Jost", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  cursor: pointer;
+  transition: background-color 0.25s, color 0.25s;
+}
+
+.btn:hover {
+  background: var(--brass);
+  color: var(--bg);
+}
+
+/* --- フッター --- */
+
+footer {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 40px 0 64px;
+  border-top: 1px solid var(--hair);
+  color: var(--mute);
+  font-size: 14px;
+}
+
+footer p { margin: 0; }
+
+.copy {
+  margin-top: 20px;
+  color: oklch(0.560 0.014 165);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+}
+
+/* --- タブレット --- */
+
+@media (max-width: 860px) {
+  .menu { grid-template-columns: 1fr; gap: 40px; }
+  .menu li { padding: 0; border-left: none; }
+  .menu li + li { padding-top: 40px; border-top: 1px solid var(--hair); }
+}
+
+/* --- モバイル --- */
+
+@media (max-width: 640px) {
+  body { padding: 0 22px; font-size: 16px; }
+  .hero { padding: 80px 0 64px; }
+  .eyebrow { letter-spacing: 0.3em; text-indent: 0.3em; }
+  .block { padding: 48px 0; }
+  .hours { gap: 20px 40px; }
+  .btn { width: 100%; padding: 0; }
+}
