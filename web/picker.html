@@ -86,7 +86,7 @@
   .card{position:relative;border:0;border-radius:0;overflow:visible;background:none;
     cursor:pointer;transition:.12s}
   .card:hover{opacity:.78}
-  .card.on,.card.on[data-role="色"],.card.on[data-role="文字"]{opacity:1}
+  .card.on{opacity:1}
   .card.on .thumb{outline:2px solid var(--line);outline-offset:4px}
   .thumb{aspect-ratio:3/4;background:#fff;overflow:hidden;display:block;
     border:1px solid var(--rule)}
@@ -99,8 +99,8 @@
   .src{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.14em}
   .badge{position:absolute;top:0;left:0;padding:4px 11px;border-radius:0;
     font-size:11px;letter-spacing:.1em;color:#f6f3ec;background:var(--pick);display:none}
-  .card.on .badge,.card.on[data-role="色"] .badge,.card.on[data-role="文字"] .badge{
-    display:block;background:var(--pick)}
+  .card.on .badge{display:block;background:var(--pick)}
+  .card.on[data-rank="1"] .badge,.card.on[data-rank="2"] .badge{background:var(--muted)}
   a.ext{position:absolute;top:0;right:0;background:var(--line);color:var(--bg);
     text-decoration:none;font-size:11px;padding:4px 10px;border-radius:0;opacity:0;transition:.15s}
   .card:hover a.ext,.card:hover .ext{opacity:1}
@@ -164,6 +164,11 @@
   .pcard .n{font-family:var(--mincho);font-size:19px;font-weight:700;line-height:1.3;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .pcard .why{font-size:12.5px;color:#6b655a;line-height:1.7;text-wrap:pretty}
+  .pcard .rank2{color:var(--muted)}
+  .pcard .hint{margin-top:6px;font:inherit;font-size:12px;padding:5px 0;border:0;
+    border-bottom:1px solid var(--soft);background:none;color:var(--fg);width:100%}
+  .pcard .hint::placeholder{color:var(--dim)}
+  .pcard .hint:focus{outline:0;border-bottom-color:var(--line)}
   .pcard .x{position:absolute;top:16px;right:0;width:24px;height:24px;border-radius:0;
     border:1px solid var(--soft);background:none;color:var(--muted);font-size:13px;
     line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
@@ -297,12 +302,14 @@ AWW.forEach((r,i)=>items.push({id:"a"+String(i+1).padStart(2,"0"),src:"AWWWARDS"
   thumb:r[1],site:r[2],name:r[3]}));
 const byId=Object.fromEntries(items.map(i=>[i.id,i]));
 
-const ROLES=["骨格","色","文字"];
-const ROLE_HINT={"骨格":"構図・余白のリズム","色":"配色のロジック","文字":"タイポの態度"};
-const MAX=ROLES.length;
+const MAX=3;
 
-// 選択状態: {骨格:id, 色:id, 文字:id}
-let sel={};
+// 選択状態: [{id, hint}] の並び。順番が意味を持ち、先頭が「軸」。
+// 何をどこから借りるかは AI が決めるので、利用者に役割を割り当てさせない。
+// 平均化を防ぐのは「役割を人が割ること」ではなく「1つの属性の出どころが1つであること」。
+let sel=[];
+function rankOf(id){ return sel.findIndex(function(x){ return x.id===id; }); }
+function entry(id){ const i=rankOf(id); return i<0?null:sel[i]; }
 const KEY="refs-picks-v2";
 const st=()=>document.getElementById("st");
 function setStatus(m,c){const e=st();e.textContent=m;e.className="status"+(c?" "+c:"");}
@@ -316,36 +323,8 @@ function thumbHTML(it){
     '<img loading="lazy" referrerpolicy="no-referrer" src="'+it.thumb+'"'+
     (it.alt?' data-alt="'+it.alt+'" onerror="fallback(this)"':'')+' alt=""></span>';
 }
-function renderSlots(){
-  const box=document.getElementById("slots");
-  if(!box) return;                       // 表示は提案パネルに一本化した
-  box.innerHTML=ROLES.map(r=>{
-    const id=sel[r], it=id?byId[id]:null;
-    // 枠が空になったら AI タグも消す（外した枠に AI と出ていると紛らわしい）
-    const isAI=!!(it&&aiReasons&&aiReasons.some(p=>p.role===r));
-    return '<div class="slot'+(it?' filled':'')+(isAI?' ai':'')+'">'+
-      '<span class="dot"></span>'+
-      thumbHTML(it)+
-      '<span class="body">'+
-        '<span class="role">'+r+(r==="骨格"?"":"（任意）")+(isAI?' <span class="aitag">AI</span>':'')+'</span>'+
-        '<span class="val">'+(it?it.name:ROLE_HINT[r])+'</span>'+
-      '</span>'+
-      (it?'<button class="x" data-unset="'+r+'" title="この枠を外す">×</button>':'')+
-      '</div>';
-  }).join("");
-  bindSlots();
-}
-
-function bindSlots(){
-  const box=document.getElementById("slots");
-  if(!box) return;
-  box.querySelectorAll("[data-unset]").forEach(function(b){
-    b.onclick=function(){ unset(b.dataset.unset); };
-  });
-  box.querySelectorAll("[data-reveal]").forEach(function(p){
-    p.onclick=function(){ reveal(p.dataset.reveal); };
-  });
-}
+// 表示は下の選択パネルに一本化した
+function renderSlots(){}
 
 // 枠のサムネを押すと、その ref が入っている系統を開いて位置を示す
 function reveal(id){
@@ -359,7 +338,7 @@ function reveal(id){
     setTimeout(function(){card.style.outline=""},1600);
   }
 }
-function unset(role){ delete sel[role]; sync(); }
+function unset(id){ const i=rankOf(id); if(i>=0){ sel.splice(i,1); sync(); } }
 
 /* ---------- 段階1 ---------- */
 function renderCats(){
@@ -411,32 +390,28 @@ function toCats(){
 function fallback(img){ if(img.dataset.alt){img.src=img.dataset.alt;img.removeAttribute("data-alt");} }
 
 /* ---------- 選択 ---------- */
-function roleOf(id){ return ROLES.find(r=>sel[r]===id)||null; }
 function toggle(id){
-  const r=roleOf(id);
-  if(r){ delete sel[r]; sync(); return; }
-  // 「追加する」から来た場合はその枠へ。そうでなければ空いている先頭へ。
-  const target=(pendingRole && !sel[pendingRole]) ? pendingRole : ROLES.find(x=>!sel[x]);
-  if(!target){ setStatus("3枠すべて埋まっています。外してから選んでください","ng"); return; }
-  sel[target]=id; pendingRole=null; sync();
+  const i=rankOf(id);
+  if(i>=0){ sel.splice(i,1); sync(); return; }
+  if(sel.length>=MAX){ setStatus(MAX+"枚まで。外してから選んでください","ng"); return; }
+  sel.push({id:id, hint:""}); sync();
 }
+// バッジを押すと「軸」に繰り上げる
 function cycle(id){
-  const from=roleOf(id); if(!from) return;
-  const to=ROLES[(ROLES.indexOf(from)+1)%ROLES.length];
-  const other=sel[to];                 // 次の枠が埋まっていれば入れ替える
-  sel[to]=id;
-  if(other) sel[from]=other; else delete sel[from];
-  sync();
+  const i=rankOf(id);
+  if(i<=0) return;
+  const e=sel.splice(i,1)[0];
+  sel.unshift(e); sync();
 }
 function paint(){
   document.querySelectorAll("#grid .card").forEach(c=>{
-    const r=roleOf(c.dataset.id);
-    c.classList.toggle("on",!!r);
-    if(r){ c.dataset.role=r; c.querySelector(".badge").textContent=r; }
-    else { delete c.dataset.role; }
+    const i=rankOf(c.dataset.id);
+    c.classList.toggle("on",i>=0);
+    if(i>=0){ c.dataset.rank=String(i); c.querySelector(".badge").textContent=(i===0?"軸":"＋"); }
+    else { delete c.dataset.rank; }
   });
 }
-function clearAll(){ sel={}; sync(); }
+function clearAll(){ sel=[]; sync(); }
 
 function sync(){ renderSlots(); renderProposal(); paint(); save(); }
 
@@ -448,10 +423,11 @@ function save(){
   clearTimeout(timer); timer=setTimeout(push,400);
 }
 async function push(){
-  const picks=ROLES.filter(r=>sel[r]).map(r=>{
-    const it=byId[sel[r]];
-    return {role:r,id:it.id,src:it.src,name:it.name,site:it.site,thumb:it.thumb};
-  });   // by:"ai" は保存しない = 保存された時点で本人の選択
+  // 並び順が意味を持つ（先頭が軸）。by:"ai" は保存しない = 保存された時点で本人の選択
+  const picks=sel.filter(x=>byId[x.id]).map(function(x){
+    const it=byId[x.id];
+    return {id:it.id,src:it.src,name:it.name,site:it.site,thumb:it.thumb,hint:x.hint||""};
+  });
   try{
     const res=await fetch("/api/picks",{method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({picks})});
@@ -481,12 +457,14 @@ async function load(){
     const r=await fetch("/api/picks",{cache:"no-store"});
     if(!r.ok) throw 0;
     const d=await r.json();
-    (d.picks||[]).forEach(p=>{ if(p.role&&byId[p.id]) sel[p.role]=p.id; });
+    // 旧形式（role つき）も並び順として受ける
+    sel=(d.picks||[]).filter(p=>byId[p.id]).map(p=>({id:p.id,hint:p.hint||""}));
     const ai=(d.picks||[]).filter(p=>p.by==="ai");
     if(ai.length){ showProposal(ai); setStatus("未確定"); }
-    else setStatus(Object.keys(sel).length?"保存済みを読み込み":"未選択");
+    else setStatus(sel.length?"保存済みを読み込み":"未選択");
   }catch(e){
-    try{ sel=JSON.parse(localStorage.getItem(KEY)||"{}"); }catch(_){ sel={}; }
+    try{ const v=JSON.parse(localStorage.getItem(KEY)||"[]"); sel=Array.isArray(v)?v:[]; }
+    catch(_){ sel=[]; }
     setStatus("サーバ未接続・ローカル保存のみ","ng");
   }
   renderCats(); renderSlots(); renderProposal();
@@ -540,85 +518,96 @@ async function watch(name,label,onDone){
 
 function showProposal(picks){
   aiReasons=picks;
-  sel={};
-  picks.forEach(function(p){ if(byId[p.id]) sel[p.role]=p.id; });
-  renderSlots();
+  sel=picks.filter(function(p){ return byId[p.id]; })
+           .map(function(p){ return {id:p.id, hint:p.hint||""}; });
   renderProposal();
 }
 
-// 3枠すべてを常に出す。埋まっていれば ref とその理由、空なら「追加する」。
-// AI提案でも自分で選んだ場合でも同じ見た目にする。
+// 選んだものを並び順で出す。先頭が「軸」、それ以降は「足したもの」。
+// 何をどこから借りるかは AI が決めるので、ここでは役割を持たせない。
 function renderProposal(){
-  const any = ROLES.some(function(r){ return sel[r]; });
   const box = document.getElementById("proposal");
-  if(!any && !aiReasons){ box.classList.remove("on"); return; }
+  if(!sel.length && !aiReasons){ box.classList.remove("on"); return; }
   box.classList.add("on");
   document.getElementById("ptitle").textContent = aiReasons ? "おまかせの結果" : "選択中";
   document.getElementById("ptag").style.display = aiReasons ? "" : "none";
   document.getElementById("paccept").style.display = aiReasons ? "flex" : "none";
 
-  document.getElementById("reasons").innerHTML = ROLES.map(function(r){
-    const it = sel[r] ? byId[sel[r]] : null;
-    const opt = "";
-    if(!it){
-      return '<div class="pcard empty" data-add="' + r + '" title="この枠に追加する">' +
-        '<span class="pic empty"></span>' +
-        '<span class="txt">' +
-          '<span class="r">' + r + opt + '</span>' +
-          '<span class="n dim">＋ 追加</span>' +
-          '<span class="why">押して1枚選ぶとここに入ります</span>' +
-        '</span></div>';
-    }
-    const info = aiReasons ? aiReasons.find(function(x){ return x.role === r; }) : null;
-    return '<div class="pcard">' +
+  const cards = sel.map(function(x, i){
+    const it = byId[x.id];
+    const info = aiReasons ? aiReasons.find(function(y){ return y.id === x.id; }) : null;
+    const head = i === 0
+      ? '<span class="r">軸にする</span>'
+      : '<span class="r rank2">＋ 足したもの</span>';
+    const why = info && info.reason ? info.reason : (i === 0 ? "この方向でつくる" : "");
+    // 軸には入力欄を出さない（何を借りるか指定させないため）。
+    // ただし繰り上げで値が残っている場合は見えなくなるので出す。
+    const hint = (i === 0 && !(x.hint || "")) ? "" :
+      '<input class="hint" data-hint="' + it.id + '" value="' + (x.hint || "") +
+      '" placeholder="ここが欲しい（任意）">';
+    const up = i === 0 ? "" : '<button data-up="' + it.id + '">軸にする</button>';
+    return '<div class="pcard" data-rank="' + i + '">' +
       '<span class="pic" data-zoom="' + it.id + '" title="拡大する">' +
         '<img loading="lazy" referrerpolicy="no-referrer" src="' + it.thumb + '"' +
         (it.alt ? ' data-alt="' + it.alt + '" onerror="fallback(this)"' : '') + ' alt=""></span>' +
-      '<span class="txt">' +
-        '<span class="r">' + r + '</span>' +
+      '<span class="txt">' + head +
         '<span class="n">' + it.name + '</span>' +
-        '<span class="why">' + (info && info.reason ? info.reason : "") + '</span>' +
-        '<span class="acts"><button data-zoom="' + it.id + '">拡大</button></span>' +
+        '<span class="why">' + why + '</span>' + hint +
+        '<span class="acts"><button data-zoom="' + it.id + '">拡大</button>' + up + '</span>' +
       '</span>' +
-      '<button class="x" data-unset="' + r + '" title="この枠を外す">×</button>' +
+      '<button class="x" data-unset="' + it.id + '" title="外す">×</button>' +
       '</div>';
-  }).join("");
+  });
+
+  if(sel.length < MAX){
+    cards.push('<div class="pcard empty" data-add="1">' +
+      '<span class="pic empty"></span>' +
+      '<span class="txt">' +
+        '<span class="r">' + (sel.length ? "＋ もう1枚" : "1枚選ぶ") + '</span>' +
+        '<span class="n dim">' + (sel.length ? "足す" : "選ぶ") + '</span>' +
+        '<span class="why">' + (sel.length
+          ? "「ここが欲しい」が明確なときだけ。増やすほど混ざります"
+          : "下の一覧から1枚クリック") + '</span>' +
+      '</span></div>');
+  }
 
   const box2 = document.getElementById("reasons");
+  box2.innerHTML = cards.join("");
   box2.querySelectorAll("[data-unset]").forEach(function(b){
     b.onclick = function(e){ e.stopPropagation(); unset(b.dataset.unset); };
   });
   box2.querySelectorAll("[data-zoom]").forEach(function(b){
     b.onclick = function(e){ e.stopPropagation(); openLB(b.dataset.zoom); };
   });
+  box2.querySelectorAll("[data-up]").forEach(function(b){
+    b.onclick = function(e){ e.stopPropagation(); cycle(b.dataset.up); };
+  });
   box2.querySelectorAll("[data-add]").forEach(function(b){
-    b.onclick = function(){ addRole(b.dataset.add); };
+    b.onclick = function(){ toCats(); aimsg("下の一覧から1枚クリックしてください",""); };
+  });
+  box2.querySelectorAll("[data-hint]").forEach(function(inp){
+    inp.onclick = function(e){ e.stopPropagation(); };
+    inp.onchange = function(){
+      const e2 = entry(inp.dataset.hint);
+      if(e2){ e2.hint = inp.value.trim(); save(); }
+    };
   });
   warnSkeleton();
 }
 
 // 構図（重み28）はフルページが無いと読み取れない。
-// Lapa / Awwwards はヒーロー切り抜きしか無いので、骨格枠に来たら伝える。
+// Lapa / Awwwards はヒーロー切り抜きしか無いので、軸に来たら伝える。
 function warnSkeleton(){
   const old = document.getElementById("skelwarn");
   if(old) old.remove();
-  const id = sel["骨格"];
-  const it = id ? byId[id] : null;
+  const it = sel.length ? byId[sel[0].id] : null;
   if(!it || it.src === "GODLY") return;
   const box = document.getElementById("reasons");
   box.insertAdjacentHTML("afterend",
     '<p id="skelwarn" style="font-size:12px;color:var(--pick);line-height:1.7;margin:0 0 14px">' +
-    'この骨格（' + it.name + '）は<b>ヒーロー部分の画像しかありません</b>。' +
+    '軸にした「' + it.name + '」は<b>ヒーロー部分の画像しかありません</b>。' +
     '構図と密度は読み取れないので、自由度を下げても再現されず、案ごとに変わります。' +
-    '構図まで借りたいなら GODLY の参照を選んでください。</p>');
-}
-
-// 空き枠に足す。次にカードを押したら「その枠」に入る。
-let pendingRole = null;
-function addRole(r){
-  pendingRole = r;
-  toCats();
-  aimsg("1枚選ぶと「" + r + "」に入ります", "ok");
+    'そこまで似せたいなら GODLY の参照を軸にしてください。</p>');
 }
 
 /* ---------- 拡大表示 ---------- */
@@ -637,7 +626,7 @@ function acceptAI(){
   aimsg("決まりました。外したり足したりもできます","ok");
 }
 function rejectAI(){
-  sel={}; aiReasons=null; pendingRole=null;
+  sel=[]; aiReasons=null;
   sync();
   aimsg("取り消しました","");
 }
@@ -664,13 +653,13 @@ function renderFreedom(){
 document.getElementById("freedom").oninput=renderFreedom;
 
 async function decide(){
-  if(!sel["骨格"]){ msg("骨格枠が空です。先に1枚選んでください","" ); return; }
+  if(!sel.length){ msg("まず1枚選んでください","" ); return; }
   const n=+document.getElementById("freedom").value;
   const body={
     freedom:n, released:released(n),
     variants:+document.getElementById("variants").value,
     target:document.getElementById("target").value,
-    picks:ROLES.filter(r=>sel[r]).map(r=>({role:r,id:sel[r],name:byId[sel[r]].name,site:byId[sel[r]].site}))
+    picks:sel.filter(x=>byId[x.id]).map(x=>({id:x.id,name:byId[x.id].name,site:byId[x.id].site,hint:x.hint||""}))
   };
   const go=document.getElementById("go");
   go.disabled=true;

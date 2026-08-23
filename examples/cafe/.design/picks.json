@@ -1,12 +1,12 @@
 {
  "picks": [
   {
-   "role": "骨格",
    "id": "l162",
    "src": "LAPA",
    "name": "Ceremony Coffee Roasters",
    "site": "https://www.lapa.ninja/post/ceremony-coffee/",
-   "thumb": "https://cdn.lapa.ninja/assets/images/2x/Ceremony-Coffee-Roasters-thumb.webp"
+   "thumb": "https://cdn.lapa.ninja/assets/images/2x/Ceremony-Coffee-Roasters-thumb.webp",
+   "hint": ""
   }
  ]
 }
