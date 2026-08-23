@@ -1,0 +1,238 @@
+/* 案A — 自由度50%
+   解放: 地の明度20 ＋ 密度15 ＋ コントラスト9 ＋ 階層4 ＋ 装飾2 ＝ 50
+   固定: 構図（中央対称／l134 の骨格そのまま） / 主役（タイポ／l134 のまま）
+
+   振り方: 地の明度を【ダーク基調】へ反転。密度を【密】に詰め、
+           コントラストは【低（トーナル）】のまま — 墨色の中に生成りを浮かべ、
+           純白を一度も使わない。階層は【中】まで畳んで、装飾は【無】。
+           = 中央に軸を通した文字の塊が、暗がりの中で固まっている。
+
+   DNA: 2階級のみ / 強調は級数と余白だけ / 色は素材由来（焙煎 #b4875e）
+        影・角丸なし / 矩形のまま / 字間はラテンのラベルにのみ
+*/
+
+:root{
+  /* 地の明度=ダーク基調。ただしコントラスト=低なので純黒にしない */
+  --ground:#221f1c;          /* 焙煎した豆の殻の色 */
+  --ground-2:#2a2724;        /* 面を分けるためのもう一段 */
+  --ink:#e8e4dc;             /* 生成り。純白 #fff は使わない */
+  --mute:#9a9289;            /* l134 の #99918d をそのまま */
+  --roast:#b4875e;           /* l162 の焙煎色。ラベルにだけ乗る */
+
+  --serif: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+  --sans: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+}
+
+*{ box-sizing:border-box; }
+
+html{ background:var(--ground); }
+
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--serif);
+  /* 密度=密。行間を詰めて塊にする */
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── ラベル: 2階級のうちの下側。ラテン大文字 + 字間 ────────────── */
+.label{
+  font-family:var(--sans);
+  font-size:9px;
+  letter-spacing:.28em;
+  text-transform:uppercase;
+  color:var(--mute);
+  margin:0;
+}
+
+/* ── 構図=中央対称（固定）。全ブロックが同じ中央軸に乗る ───────── */
+.masthead,
+main > section,
+footer{
+  max-width:34em;            /* 和文なので em。ch は使わない */
+  margin:0 auto;
+  padding:0 1.5rem;
+  text-align:center;
+}
+
+/* ── 見出し ───────────────────────────────────────────── */
+.masthead{
+  /* 密度=密。l134 の「見出し下に画面1/4の空白」を畳んでいる */
+  padding-top:5.5rem;
+  padding-bottom:0;
+}
+
+h1{
+  font-family:var(--serif);
+  /* 階層=中。極端(6〜7倍)から3倍程度まで畳んだ */
+  font-size:clamp(2.4rem, 7vw, 3.6rem);
+  font-weight:400;
+  line-height:1.25;
+  letter-spacing:0;          /* 和文混じりなので字間は開けない */
+  margin:.9rem 0 0;
+}
+
+.tagline{
+  font-size:1rem;
+  color:var(--ink);
+  margin:.7rem 0 0;
+  line-height:1.8;
+}
+
+h2{
+  font-family:var(--serif);
+  font-size:1.35rem;
+  font-weight:400;
+  letter-spacing:0;
+  margin:.4rem 0 1.4rem;
+}
+
+/* 節と節の間も詰める（密度=密） */
+main > section{
+  padding-top:3.2rem;
+}
+
+main > section + section{
+  padding-top:3.4rem;
+}
+
+/* ── 営業時間 ─────────────────────────────────────────── */
+.hours dl{
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  gap:.35rem;                /* 詰める */
+}
+
+.hours dl > div{
+  display:flex;
+  justify-content:center;
+  gap:1.1rem;
+}
+
+.hours dt{
+  color:var(--mute);
+  font-size:.95rem;
+  min-width:4.5em;
+  text-align:right;
+}
+
+.hours dd{
+  margin:0;
+  font-size:.95rem;
+  min-width:9em;
+  text-align:left;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ── メニュー ─────────────────────────────────────────── */
+.menu ul{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:1.8rem;                /* 密度=密。カード化せず縦に積む */
+}
+
+.menu li{
+  /* 装飾=無。罫線も面も影も置かない */
+  margin:0;
+}
+
+.num{
+  font-family:var(--sans);
+  font-size:9px;
+  letter-spacing:.28em;
+  color:var(--roast);        /* 素材（焙煎）由来の色。UI部品には使わない */
+  display:block;
+  margin-bottom:.45rem;
+}
+
+.menu h3{
+  font-family:var(--serif);
+  font-size:1.15rem;         /* 階層=中。h2 との差を小さく保つ */
+  font-weight:400;
+  margin:0 0 .3rem;
+}
+
+.menu p{
+  margin:0;
+  font-size:.9rem;
+  color:var(--mute);
+  line-height:1.85;
+  max-width:24em;
+  margin-inline:auto;
+}
+
+/* ── 予約 ────────────────────────────────────────────── */
+.reserve{
+  padding-top:3.4rem;
+}
+
+/* DNA: UI部品に固有の色を与えない。塗りボタンにしない */
+.reserve button{
+  font-family:var(--serif);
+  font-size:1.15rem;         /* 階層=中。h3 と同級で置く */
+  letter-spacing:0;          /* 和文には字間を開けない（DNA 6） */
+  color:var(--ink);
+  background:none;
+  border:0;
+  padding:.5rem .2rem .55rem;
+  cursor:pointer;
+  line-height:1.6;
+  /* 強調は級数と余白だけ。下線一本だけ残す */
+  border-bottom:1px solid var(--ink);
+}
+
+/* 字間を開けるのはラテンのラベルだけ（DNA 6） */
+.reserve button::after{
+  content:" Reserve";
+  font-family:var(--sans);
+  font-size:9px;
+  letter-spacing:.28em;
+  text-transform:uppercase;
+  color:var(--mute);
+  margin-left:1em;
+  vertical-align:.32em;
+}
+
+.reserve button:hover{
+  color:var(--roast);
+  border-bottom-color:var(--roast);
+}
+
+/* ── フッター ─────────────────────────────────────────── */
+footer{
+  padding-top:4.5rem;
+  padding-bottom:3.5rem;
+}
+
+/* 面の境界は色の切り替わりで作る（影・罫線を使わない） */
+footer{
+  background:var(--ground-2);
+  max-width:none;
+  margin-top:4rem;
+}
+
+footer > *{
+  max-width:34em;
+  margin-inline:auto;
+}
+
+.addr{
+  font-size:.85rem;
+  color:var(--mute);
+  margin:0 auto .8rem;
+  line-height:1.9;
+}
+
+footer .label{ margin:0 auto; }
+
+@media (max-width:520px){
+  .hours dl > div{ gap:.8rem; }
+  .hours dt{ min-width:4em; }
+  .hours dd{ min-width:8em; }
+}

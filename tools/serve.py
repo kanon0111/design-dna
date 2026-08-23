@@ -37,6 +37,12 @@ class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=paths.WEB, **kw)
 
+    # picker と生成案は開発中に何度も変わる。古い版を掴ませない。
+    def end_headers(self):
+        if self.path.split("?")[0].endswith((".html", ".css", ".js", ".json")):
+            self.send_header("Cache-Control", "no-store, must-revalidate")
+        super().end_headers()
+
     # ---- 経路の合成 ----
     def translate_path(self, path):
         clean = path.split("?")[0].split("#")[0]
@@ -74,6 +80,13 @@ class Handler(SimpleHTTPRequestHandler):
             q = self.path.split("?", 1)[1] if "?" in self.path else ""
             name = dict(kv.split("=", 1) for kv in q.split("&") if "=" in kv).get("name", "")
             return self._json(200, jobs.status(name))
+        if route == "/api/brief":
+            # /design-dna:start がプロジェクトを読んで書いた下書き
+            f = paths.p("brief.md")
+            if os.path.exists(f):
+                with open(f, encoding="utf-8") as fh:
+                    return self._json(200, {"brief": fh.read().strip()})
+            return self._json(200, {"brief": ""})
         if route.startswith("/api/"):
             name = route[len("/api/"):]
             if name not in ("picks", "request", "decision", "assist"):
@@ -101,6 +114,10 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(400, {"error": "brief が空"})
 
         self._write(name, data)
+        if name == "assist":
+            # 手で直した brief を残して、次に開いたときの下書きにする
+            with open(paths.p("brief.md"), "w", encoding="utf-8") as fh:
+                fh.write(data["brief"].strip() + os.linesep)
         print("  %s.json <- %s" % (name, self._summary(name, data)), flush=True)
 
         # 選定・生成はここで Claude Code を起こす（押しただけで完結させるため）

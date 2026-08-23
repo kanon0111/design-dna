@@ -1,0 +1,4 @@
+# 画像の実測とクラスタリングに使う
+opencv-python>=4.8
+numpy>=1.24
+Pillow>=10.0

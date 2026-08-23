@@ -1,0 +1,282 @@
+/* 案C — 自由度50%
+   解放: 構図28 ＋ 密度15 ＋ 階層4 ＋ 装飾2 ＝ 49
+   固定: 主役（タイポ／l134 のまま） / 地の明度（ライト基調／両 ref のまま）
+         / コントラスト（低・トーナル／両 ref のまま）
+
+   振り方: 構図を中央対称から【崩しグリッド】へ。12列を敷き、段ごとに
+           違う列・違う幅で置いて中央軸を通さない。
+           密度は【中】、階層は【極端】— 見出し級とラベル級の差を 7 倍まで開き、
+           中間サイズを作らない。装飾は【テクスチャ】— 紙の粒子を地に薄く敷く。
+           = 余白に極小のラベルが散り、文字の塊が段ごとにずれていく。
+
+   DNA: 2階級のみ / 強調は級数と余白だけ / 色は素材由来
+        影・角丸なし / 矩形のまま / 字間はラテンのラベルにのみ
+   借りない: l134 の写真ハーフトーン処理、見出し語だけの手描き下線、端の年号
+*/
+
+:root{
+  /* 地の明度=ライト基調（固定）。l134 の #f1f0ec をそのまま */
+  --paper:#f1f0ec;
+  /* コントラスト=低（固定）。純黒にせず炭色で止める */
+  --ink:#33302b;
+  --mute:#99918d;            /* l134 から */
+  --line:rgba(51,48,43,.18);
+
+  --serif: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+  --sans: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+}
+
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  color:var(--ink);
+  background-color:var(--paper);
+  /* 装飾=テクスチャ。紙の粒子だけ。写真には一切かけない */
+  background-image:url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'>\
+<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/>\
+<feColorMatrix type='saturate' values='0'/></filter>\
+<rect width='160' height='160' filter='url(%23n)' opacity='0.05'/></svg>");
+  background-repeat:repeat;
+  font-family:var(--serif);
+  line-height:1.9;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── 構図=崩しグリッド。12列。中央軸を通さない ────────────────── */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(12, 1fr);
+  column-gap:1.2rem;
+  max-width:76em;
+  margin:0 auto;
+  padding:0 2rem;
+  align-items:start;
+}
+
+/* ── 2階級のうちの下側。極小キャプス。余白に散らす ─────────────── */
+.label{
+  font-family:var(--sans);
+  font-size:9px;                 /* 階層=極端。見出しとの差を 7 倍まで開く */
+  letter-spacing:.3em;
+  text-transform:uppercase;
+  line-height:1.9;
+  color:var(--mute);
+  margin:0;
+}
+
+/* ── ヘッダー ─────────────────────────────────────────── */
+header{
+  padding-top:5rem;
+  padding-bottom:7rem;           /* 密度=中。l134 の 1/4 空白ほどは空けない */
+  row-gap:2.4rem;
+}
+
+.lab-a{ grid-column:2 / 5; }
+.lab-b{ grid-column:11 / 13; text-align:right; }
+
+.hd{
+  grid-column:2 / 10;
+  grid-row:2;
+  font-family:var(--serif);
+  font-size:clamp(3rem, 9.5vw, 6.6rem);   /* 階層=極端 */
+  font-weight:400;
+  line-height:1.02;
+  letter-spacing:-.01em;
+  margin:0;
+}
+
+.tagline{
+  grid-column:7 / 12;            /* 見出しの下、右にずらす */
+  grid-row:3;
+  font-size:1rem;
+  line-height:2.1;
+  margin:0;
+  max-width:16em;                /* 和文なので em */
+}
+
+/* ── 営業時間 ─────────────────────────────────────────── */
+.s-hours{
+  padding-bottom:7rem;
+  row-gap:1.6rem;
+}
+
+.lab-c{ grid-column:2 / 4; grid-row:1; }
+
+.h-hours{
+  grid-column:4 / 9;
+  grid-row:1;
+  font-family:var(--serif);
+  font-size:2.4rem;
+  font-weight:400;
+  line-height:1.2;
+  margin:0;
+}
+
+.s-hours dl{
+  grid-column:6 / 11;            /* 見出しから右にずらして落とす */
+  grid-row:2;
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  gap:.7rem;
+}
+
+.s-hours dl > div{
+  display:flex;
+  gap:1.4rem;
+  padding-bottom:.7rem;
+  border-bottom:1px solid var(--line);
+}
+
+.s-hours dl > div:last-child{ border-bottom:0; }
+
+.s-hours dt{
+  font-family:var(--sans);
+  font-size:9px;
+  letter-spacing:.24em;
+  color:var(--mute);
+  min-width:5em;
+  line-height:2.6;
+}
+
+.s-hours dd{
+  margin:0;
+  font-size:1rem;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ── メニュー ─────────────────────────────────────────── */
+.s-menu{
+  padding-bottom:6rem;
+  row-gap:3.2rem;
+}
+
+.lab-d{ grid-column:10 / 13; grid-row:1; text-align:right; }
+
+.h-menu{
+  grid-column:2 / 7;
+  grid-row:1;
+  font-family:var(--serif);
+  font-size:2.4rem;
+  font-weight:400;
+  line-height:1.25;
+  margin:0 0 1.5rem;
+}
+
+/* 段ごとに列位置と幅をずらす = 崩しグリッド */
+.item{ margin:0; }
+.item-1{ grid-column:2 / 6;  grid-row:2; }
+.item-2{ grid-column:6 / 10; grid-row:2; margin-top:5.5rem; }
+.item-3{ grid-column:9 / 13; grid-row:3; margin-top:-2rem; }
+
+/* 画像素材が無いので、素材の色に寄せた矩形のプレースホルダ。
+   DNA: 矩形のまま。角丸・影・テクスチャ処理はかけない */
+.swatch{
+  width:100%;
+  aspect-ratio:4 / 5;
+  margin-bottom:1.2rem;
+}
+
+.swatch--blend{ background:#c2a888; }   /* 浅煎りの液色 */
+.swatch--tart { background:#e3bda6; }   /* 果実 */
+.swatch--soda { background:#d8e0bd; }   /* レモンと炭酸 */
+
+.item .label{ margin-bottom:.5rem; }
+
+.item h3{
+  font-family:var(--serif);
+  font-size:1.15rem;
+  font-weight:400;
+  line-height:1.6;
+  margin:0 0 .5rem;
+}
+
+.desc{
+  margin:0;
+  font-size:.9rem;
+  color:var(--mute);
+  line-height:2;
+  max-width:15em;                /* 和文なので em */
+}
+
+/* ── 予約 ────────────────────────────────────────────── */
+.s-reserve{
+  padding-bottom:7rem;
+}
+
+/* DNA: UI部品に固有の色を与えない。塗りボタンにしない */
+.s-reserve button{
+  grid-column:2 / 7;             /* 中央に置かない */
+  justify-self:start;
+  font-family:var(--serif);
+  font-size:2rem;                /* 階層=極端。ボタンも見出し級で置く */
+  font-weight:400;
+  letter-spacing:0;
+  color:var(--ink);
+  background:none;
+  border:0;
+  border-bottom:1px solid var(--ink);
+  padding:.2rem .1rem .4rem;
+  cursor:pointer;
+  line-height:1.4;
+}
+
+.s-reserve button::after{
+  content:" Reserve";
+  font-family:var(--sans);
+  font-size:9px;
+  letter-spacing:.3em;
+  text-transform:uppercase;
+  color:var(--mute);
+  margin-left:1.2em;
+  vertical-align:.55em;
+}
+
+.s-reserve button:hover{ color:var(--mute); border-bottom-color:var(--mute); }
+
+/* ── フッター ─────────────────────────────────────────── */
+footer{
+  padding-top:3rem;
+  padding-bottom:4rem;
+  border-top:1px solid var(--line);
+  row-gap:1.4rem;
+}
+
+.addr{
+  grid-column:2 / 7;
+  font-size:.9rem;
+  color:var(--mute);
+  line-height:2;
+  margin:0;
+}
+
+.lab-e{ grid-column:10 / 13; text-align:right; }
+
+/* ── 狭い画面では崩しを畳む（列がつぶれると読めなくなるため） ──── */
+@media (max-width:900px){
+  .grid{ padding:0 1.5rem; column-gap:.8rem; }
+
+  .lab-a{ grid-column:1 / 8; }
+  .lab-b{ grid-column:9 / 13; }
+  .hd   { grid-column:1 / 13; }
+  .tagline{ grid-column:1 / 13; grid-row:auto; max-width:22em; }
+
+  .lab-c{ grid-column:1 / 5; grid-row:1; }
+  .h-hours{ grid-column:5 / 13; grid-row:1; }
+  .s-hours dl{ grid-column:1 / 13; grid-row:2; }
+
+  .lab-d{ grid-column:1 / 13; grid-row:1; text-align:left; }
+  .h-menu{ grid-column:1 / 13; grid-row:2; }
+  .item-1{ grid-column:1 / 13; grid-row:3; }
+  .item-2{ grid-column:1 / 13; grid-row:4; margin-top:0; }
+  .item-3{ grid-column:1 / 13; grid-row:5; margin-top:0; }
+  .swatch{ aspect-ratio:16 / 10; }
+  .desc{ max-width:26em; }
+
+  .s-reserve button{ grid-column:1 / 13; font-size:1.6rem; }
+
+  .addr  { grid-column:1 / 13; }
+  .lab-e { grid-column:1 / 13; text-align:left; }
+}

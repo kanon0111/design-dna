@@ -1,6 +1,6 @@
 {
   "name": "design-dna",
-  "description": "AIに「おしゃれに」と頼むと良いデザインの平均が返る。それを避けるための参照システム。227件の参照から役割（骨格/色/文字）ごとに1枚ずつ選び、軸の重みで変えていい範囲を制御して複数案を生成する。/design-dna:start で起動、/design-dna:reset でやり直し。ビルトインの /design（Claude Design のキャンバス）とは別物。",
+  "description": "AIに「おしゃれに」と頼むと良いデザインの平均が返る。それを避けるための参照システム。227件の参照から役割（骨格/色/文字）ごとに1枚ずつ選び、軸の重みで変えていい範囲を制御して複数案を生成する。初回は /design-dna:setup、以降 /design-dna:start で起動、/design-dna:reset でやり直し。ビルトインの /design（Claude Design のキャンバス）とは別物。",
   "author": {
     "name": "kanon0111"
   }

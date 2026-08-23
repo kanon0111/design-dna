@@ -460,6 +460,22 @@ async function push(){
   }catch(e){ setStatus("保存できず（サーバ未起動？）","ng"); }
 }
 
+// /design-dna:start がプロジェクトを読んで書いた下書きを入れておく。
+// 白紙の欄を埋めさせないため。中身は編集できる。
+async function loadBrief(){
+  const box=document.getElementById("brief");
+  if(!box || box.value.trim()) return;
+  try{
+    const d=await (await fetch("/api/brief",{cache:"no-store"})).json();
+    if(d.brief){
+      box.value=d.brief;
+      const cap=document.querySelector("#ai .cap");
+      if(cap) cap.insertAdjacentHTML("beforeend",
+        ' <span style="color:var(--pick)">このプロジェクトから下書きしました。直せます。</span>');
+    }
+  }catch(e){}
+}
+
 async function load(){
   try{
     const r=await fetch("/api/picks",{cache:"no-store"});
@@ -474,6 +490,7 @@ async function load(){
     setStatus("サーバ未接続・ローカル保存のみ","ng");
   }
   renderCats(); renderSlots();
+  loadBrief();
 }
 /* ---------- AIに選んでもらう ---------- */
 // 選定は Claude Code 側でやる。ここは依頼を書き出し、戻ってきた提案を見せるだけ。
