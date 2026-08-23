@@ -180,15 +180,17 @@ python "<このリポジトリ>/tools/fetch_thumbs.py"
 
 このリポジトリは**プライベート前提**。公開するなら以下を必ず外すこと。
 
-- `design-lab/_redesign/*.jpg` — 他サイトのスクリーンショットの縮小版
-- `design-system/refs/candidates/*.json` に含まれる各CDNのURL自体は問題ないが、
-  Godly の robots.txt は `Content-Signal: search=yes, ai-train=no` を掲げている。
-  収集スクリプトを配ること自体は各自の利用に委ねる形になるので、
-  READMEにその旨を書くこと。
+- `web/_redesign/*.jpg` — 他サイトのスクリーンショットの縮小版（picker 自身のデザイン案で使用）
+- `examples/cafe/.design/` — 1回分の作業記録。他人には要らない
 
-（`refs/thumbs/` と `refs/images/` は最初から `.gitignore` 済み。）
+`refs/candidates/*.json` は各CDNのURLだけなので同梱してよい。ただし Godly の
+robots.txt は `Content-Signal: search=yes, ai-train=no` を掲げているので、
+収集スクリプトを配る以上、その旨を README に書いておくこと。
+
+（`cache/` は最初から `.gitignore` 済み。画像は1枚も入っていない。）
 
 ## 注意
 
 このフォルダは OneDrive 配下にある。`.git` の同期でまれに競合が起きるので、
-気になるなら OneDrive の外へ移すこと。
+気になるなら OneDrive の外へ移すこと（`~/.claude/skills/design-dna` の
+リンク先を張り替えるだけで済む）。
