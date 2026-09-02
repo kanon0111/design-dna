@@ -34,15 +34,22 @@ def _set(name, **kw):
         JOBS[name].update(kw)
 
 
-def _run(name, prompt, tools, timeout):
+def _run(name, prompt, tools, timeout, sandbox=None, after=None):
+    """sandbox が指定されたら、そのディレクトリ**だけ**を見せて走らせる。
+
+    既存のコードが見えていると参照画像は数ある入力の1つに薄まるので、
+    生成のときは物理的に隔離する。after は終了後に呼ぶ後片づけ（回収）。
+    """
     _set(name, status="running", started=time.time(), message="Claude Code を起動中…")
+    where = sandbox or paths.project_root()
+    dirs = [sandbox] if sandbox else [paths.PLUGIN_ROOT, paths.project_root()]
     cmd = [CLAUDE, "-p",
            "--allowedTools", *tools,
-           "--permission-mode", "acceptEdits",
-           "--add-dir", paths.PLUGIN_ROOT,
-           "--add-dir", paths.project_root()]
+           "--permission-mode", "acceptEdits"]
+    for d in dirs:
+        cmd += ["--add-dir", d]
     try:
-        r = subprocess.run(cmd, input=prompt, cwd=paths.project_root(), timeout=timeout,
+        r = subprocess.run(cmd, input=prompt, cwd=where, timeout=timeout,
                            capture_output=True, text=True, encoding="utf-8", errors="replace")
         if r.returncode != 0:
             _set(name, status="error",
@@ -53,9 +60,14 @@ def _run(name, prompt, tools, timeout):
         _set(name, status="error", message="時間切れ（%d秒）" % timeout)
     except Exception as e:
         _set(name, status="error", message=str(e)[:400])
+    if after:
+        try:
+            after()
+        except Exception as e:
+            _set(name, status="error", message="回収に失敗: %s" % str(e)[:200])
 
 
-def start(name, prompt, tools, timeout=900):
+def start(name, prompt, tools, timeout=900, sandbox=None, after=None):
     """同名のジョブが動いていれば拒否する。"""
     with _lock:
         cur = JOBS.get(name)
@@ -63,7 +75,8 @@ def start(name, prompt, tools, timeout=900):
             return False, "すでに実行中です"
     if not available():
         return False, "claude コマンドが見つかりません"
-    threading.Thread(target=_run, args=(name, prompt, tools, timeout), daemon=True).start()
+    threading.Thread(target=_run, args=(name, prompt, tools, timeout, sandbox, after),
+                     daemon=True).start()
     return True, "開始しました"
 
 
@@ -164,96 +177,65 @@ def _dna_line():
 
 
 def generate_prompt():
-    return f"""あなたはデザイン参照システムを操作している。
+    """隔離環境の中で走る前提のプロンプト。参照プールもプロジェクトも見えない。"""
+    return """このディレクトリにある材料だけで、1ページのWebページを作る。
+**ここに無いものは存在しない。** 他のディレクトリを探しに行かない。
 
-{_where()}
-## やること
-`.design/request.json`（自由度・案数・適用先）と `.design/picks.json`（選ばれた ref）に
-従って、このプロジェクトのデザイン案を生成する。
+材料:
+  layout.json        参照の**配置**。これが一番大事
+  layout-overlay.png 配置の検出結果を参照画像に描いたもの（目で確かめる用）
+  ref-1-*.png        参照デザインの実物（ref-1 が軸。複数枚ならページを縦に切ったもの）
+  content.md         載せる文言。これがすべて
+  axes.md            軸と重み
+  brief.json         自由度・案数・読み取れない軸
+  dna.md             （あれば）前に抽出した不変条件
+
+## 自由度は「配置をどれだけ動かしてよいか」
+
+`layout.json` は参照のセクションとブロックを**比率**で持っている
+（`x` `w` `y` `h` はページ幅・高さに対する 0〜1）。
+
+    自由度  0%   layout.json の座標をそのまま使う。中身だけ差し替える
+    自由度 30%   セクションの数と順序、ブロックの左右関係は保つ。
+                 x と w のずれは ±0.05 まで
+    自由度 60%   セクションの数は保つが、中の配置は組み替えてよい
+    自由度100%   配置は自由。参照は雰囲気の参考
+
+`brief.json` の `freedom` を見て、対応する縛りで作る。
+**これが「似ている」の中身**であって、軸のラベル（構図＝左寄せ 等）ではない。
+軸のラベルは4択の要約でしかなく、そこから元の見た目は復元できない。
 
 ## 手順
-1. 参照プールの `axes.md` を読む。軸と重み、そして**ルール4**（DNAに軸の値を書かない）を守る。
-2. DNA の状態は **{_dna_line()}**。
 
-   「最新」以外なら、**実物画像を見て抽出し直す**（前回の読みを使い回さない）。
-   抽出したら `.design/dna.md` と一緒に `.design/dna-source.json` を必ず書く。
+1. **layout.json を読み、layout-overlay.png と ref-1-*.png を Read で見る。**
+   検出が実物と合っているか自分の目で確かめる。ずれていたら実物を優先する。
+2. `content.md` の文言を、layout の各ブロックに割り当てる。
+   - `kind` が `文字` のブロックには文字を置く
+   - `kind` が `画像` のブロックには画像を置く。素材が無いので
+     インラインSVGか CSS で、参照のその位置にあるものの**役割**を果たすものを作る
+   - `kind` が `色面` のブロックはベタの面。無理に何か置かない
+   - 文言が足りなければブロックを減らす。**content.md に無いものを作らない**
+3. セクションの地の色は `layout.json` の `bg` を使う。
+4. `axis-values.md` に、参照から読み取った値と根拠を書く（全7軸）。
+   読み取れない軸は「読み取れず」と正直に書く。
+5. `brief.json` の `variants` の数だけ `a/`, `b/`, `c/` … に
+   `index.html` と `styles.css` を書く。
+   - 自由度の範囲内で、**案ごとに違うずらし方**をする。
+     全案が同じ配置になったら、案を分けた意味がない。
+   - 各 css の冒頭に、参照の配置をどう使い、どこをどれだけずらしたかを書く。
+   - 和文の折り返しに `ch` を使わない。`em` を使う。
+   - 幅は 1280px 基準で作る（比較画面がこの幅で撮る）。
+6. `variants.json` を書く。
 
    ```json
-   {{"picks": ["l162"]}}
+   {"variants":[
+    {"id":"a","label":"何を振ったか一言","released":"…","fixed":"…",
+     "note":"配置をどう使ったか","freedom":30}
+   ]}
    ```
-
-   これが今の `picks.json` と一致していることで「最新」と判定される。書き忘れると
-   毎回取り直しになる（安全側に倒してある）。
-   画像の場所:
-   - Godly の ref は参照プールの `cache/images/godly/<slug>/desktop-full.webp` にフルページがある。
-     縦に長いので PIL で4分割して `.design/_slices/` に出してから Read で見る。
-   - Lapa / Awwwards の ref は `cache/thumbs/<id>.img` のみ
-     （756x1000 のヒーロー切り抜き。**ページ全体の構図は写っていない**）。
-   - DNA には**方針だけ**書く。「左寄せ」「ダーク」のような軸の値を書かない（ルール4）。
-   - 両方の ref に**共通して**現れた方針だけを不変条件にする。
-   - 「借りない部分」も明記する。ref 固有の芸を移植すると滑るため。
-
-3. **`.design/axis-values.md` を書く。これが無いと「固定」が機能しない。**
-   `axes.md` の全7軸について、参照から**実際に読み取れた値**を1行ずつ書く。
-
-   `picks.json` は**並び順だけ**を持つ（先頭が軸）。役割は割り当てられていないので、
-   **どの軸をどの参照から取るかはあなたが決める**。決めた結果を「出どころ」に記録する。
-
-   ```
-   | 軸 | 値 | 出どころ | 根拠 |
-   |---|---|---|---|
-   | 構図 | 左寄せ非対称 | l134 | ヒーローの見出しが左の柱に揃い、被写体が右 |
-   | 地の明度 | ライト基調 | l162 | hint に「この生成りが欲しい」とあったため |
-   | 主役 | 読み取れず | — | ヒーロー切り抜きのみで、ページ全体の主従が判断できない |
-   ```
-
-   **1つの軸に2つの参照を混ぜない**（`axes.md` ルール7）。混ぜた瞬間に平均になる。
-   どちらか一方を選び、選んだ理由を根拠に書く。
-   2枚目以降に `hint` があれば、その軸はその参照から取る。
-
-   **読み取れない軸に推測で値を入れない。**「読み取れず」と正直に書く。
-   ヒーロー切り抜きしか無い ref から構図や密度を断定しないこと。
-
-4. 案を生成する。`request.json` の `variants` の数だけ、`.design/gen/a/`, `b/`, `c/` … に
-   `index.html` と `styles.css` を書く。
-
-   **文言は引き継ぐ。構造は引き継がない。**
-   - 適用先のページから**文言だけ**を取る（店名・見出し・本文・住所など）。
-     ダミーテキストにしない。
-   - **既存ページの DOM 構造をなぞらない。** セクションの順序、見出しの階層、
-     リストの組み方は、軸が決めること。元のページと同じ骨格になったら失敗と思うこと。
-
-   **「固定」は「触らない」ではない。「参照の値を再現する」である。**
-   - 固定された軸は、`axis-values.md` に書いた**参照の値を積極的に適用する**。
-     手をつけずに放置すると元ページの値が残り、自由度を下げるほど参照ではなく
-     元デザインに近づくという逆転が起きる。
-   - 値が「読み取れず」の軸は**固定できない**。その軸は案ごとに違う値を選び、
-     `variants.json` の `note` に「参照から読み取れなかったので案ごとに変えた」と書く。
-
-   - `axes.md` のルール2に従い、**案ごとに解放する軸をずらす**。
-     自由度の予算内で別の組合せに割り当て直す。全案で同じ軸を動かすと似た案が並ぶ。
-   - 各 css の冒頭に、その案で解放した軸と固定した軸をコメントで書く。
-   - 和文の折り返しに `ch` を使わない（欧文基準で幅が足りない）。`em` を使う。
-   - 画像素材が無ければ、色調を ref に寄せた CSS のプレースホルダを置く。
-   - **前回の生成物が `gen/` に残っていたら、今回作らない案のディレクトリは削除する。**
-5. `.design/gen/variants.json` を書く。比較画面はここを読んで見出しと説明を出す。
-
-```json
-{{"variants":[
- {{"id":"a","label":"地の明度をライト基調へ振る",
-  "released":"装飾2＋階層4＋コントラスト9＋密度15＋地の明度20＝50",
-  "fixed":"構図・主役",
-  "note":"地を反転してライト基調に。黒は営業時間の帯だけ。","freedom":50}}
-]}}
-```
-
-`id` は `gen/` 配下のディレクトリ名と一致させる。`label` はその案が
-**何を振ったか**が分かる短い言葉にする。
-6. `.design/ledger.md` に今回の行を追記する（id / 自由度 / 解放した軸 / 参照ref）。
 
 ## 重要
-- 生成した案は必ず `.design/gen/<x>/index.html` として実際に開ける状態にする
-  （サーバは `/gen/<x>/` で配信する）。
-- 参照プール側のファイルは**書き換えない**。書き込みは `.design/` の中だけ。
-- 最後に、各案が「何を振ったか」を1行ずつ日本語で簡潔に報告する。それ以外は出力しない。
+- **配置を守ることが最優先。** 色や書体より先に、まず物の位置を合わせる。
+- 参照画像と content.md 以外に情報源は無い。記憶で補わない。
+- 出力は最後に、各案が参照の配置をどう扱ったかを1行ずつ。それ以外は出力しない。
 """

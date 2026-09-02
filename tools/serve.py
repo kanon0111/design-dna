@@ -21,6 +21,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths
 import jobs
+import isolate
 
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
 
@@ -86,6 +87,21 @@ class Handler(SimpleHTTPRequestHandler):
             q = self.path.split("?", 1)[1] if "?" in self.path else ""
             name = dict(kv.split("=", 1) for kv in q.split("&") if "=" in kv).get("name", "")
             return self._json(200, jobs.status(name))
+        if route.startswith("/ref/"):
+            # 選んだ参照の実物。案の隣に並べて「何を選んで何が出たか」を見せる。
+            rid = route[len("/ref/"):].split(".")[0]
+            src = os.path.join(paths.THUMBS, rid + ".img")
+            if not os.path.exists(src):
+                return self._json(404, {"error": "no such ref"})
+            with open(src, "rb") as fh:
+                body = fh.read()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/webp")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+            return
         if route == "/api/baseline":
             # 比較したい既存物（現行サイト、過去の案）をプロジェクト側が宣言する
             f = paths.p("baseline.json")
@@ -136,8 +152,20 @@ class Handler(SimpleHTTPRequestHandler):
         # 選定・生成はここで Claude Code を起こす（押しただけで完結させるため）
         if name in JOB_FOR:
             job, mk, tools, limit = JOB_FOR[name]
-            ok, msg = jobs.start(job, mk(data), tools, timeout=limit)
-            print("  %s ジョブ: %s" % (job, msg), flush=True)
+            try:
+                box = after = None
+                if job == "generate":
+                    # 既存のコードが見えていると参照が薄まるので、隔離してから走らせる
+                    box = isolate.build()
+                    after = isolate.collect
+                ok, msg = jobs.start(job, mk(data), tools, timeout=limit,
+                                     sandbox=box, after=after)
+            except Exception as e:
+                # ここで例外を外に出すと接続ごと切れて「サーバに届きませんでした」になる
+                msg = "%s: %s" % (type(e).__name__, str(e)[:160])
+                print("  %s ジョブの準備に失敗: %s" % (job, msg), flush=True)
+                return self._json(200, {"ok": True, "job": False, "message": msg})
+            print("  %s ジョブ: %s%s" % (job, msg, "（隔離）" if box else ""), flush=True)
             return self._json(200, {"ok": True, "job": ok, "message": msg})
         return self._json(200, {"ok": True})
 
