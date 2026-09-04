@@ -105,6 +105,17 @@ def _entry_page():
     return None
 
 
+def max_variants(freedom):
+    """自由度から、作れる案の数の上限を出す。
+
+    自由度0は「参照をそのまま再現する」なので、正解は1つしかない。
+    そこで3案作らせると、2案は必ず参照から外れたものになる。
+    画面側と同じ規則をここにも置く（古い画面から来た値を信じないため）。
+    """
+    n = int(freedom or 0)
+    return 1 if n <= 10 else 2 if n <= 35 else 3 if n <= 70 else 4
+
+
 def build():
     d = work_dir(create=True)
     # OneDrive やブラウザがハンドルを掴んでいることがある。消せないものは残す。
@@ -173,12 +184,28 @@ def build():
     if os.path.exists(paths.p("dna.md")):
         shutil.copy(paths.p("dna.md"), os.path.join(d, "dna.md"))
 
+    # 文言の量が参照の入れ物に対して足りているか。
+    # 足りないまま自由度0で回すと、参照の骨格だけ残って中身が空のページになる。
+    # 前に Lightspark（文字の塊58個）へカフェの文言22行を流し込んで、まさにそうなった。
+    lay_path = os.path.join(d, "layout.json")
+    holes = fill = 0
+    if os.path.exists(lay_path):
+        _l = json.load(io.open(lay_path, encoding="utf-8"))
+        holes = sum(1 for sec in _l["sections"] for b in sec["blocks"] if b["kind"] == "文字")
+        fill = len(lines)
+    short = holes and fill < holes * 0.6
+
+    nvar = min(int(req.get("variants") or 1), max_variants(req.get("freedom")))
+
     json.dump({
+        "contentHoles": holes,
+        "contentLines": fill,
+        "contentShort": bool(short),
         "freedom": req.get("freedom"),
         "released": req.get("released") or [],
         "unreadable": req.get("unreadable") or [],
         "effectiveFreedom": req.get("effectiveFreedom"),
-        "variants": req.get("variants") or 1,
+        "variants": nvar,
         "refs": refs,
         "layout": "layout.json",
     }, io.open(os.path.join(d, "brief.json"), "w", encoding="utf-8"),
@@ -188,7 +215,13 @@ def build():
     print(d, file=w)
     print("  参照 %d枚 / 文言 %d行 / 自由度 %s%%（実質 %s%%）/ %s案" % (
         len(refs), len(lines), req.get("freedom"),
-        req.get("effectiveFreedom", req.get("freedom")), req.get("variants")), file=w)
+        req.get("effectiveFreedom", req.get("freedom")), nvar), file=w)
+    if nvar < int(req.get("variants") or 1):
+        print("  案数を %s→%d に。自由度 %s%% では別案の作りようがない"
+              % (req.get("variants"), nvar, req.get("freedom")), file=w)
+    if short:
+        print("  注意: 参照の文字の入れ物 %d 個に対して文言 %d 行。"
+              "全部は埋まらないので、下のセクションは落とされる" % (holes, fill), file=w)
     print("  既存のHTML・CSS・過去の案は置いていない", file=w)
     w.flush()
     return d

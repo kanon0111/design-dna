@@ -86,6 +86,11 @@
   .card{position:relative;border:0;border-radius:0;overflow:visible;background:none;
     cursor:pointer;transition:.12s}
   .card:hover{opacity:.78}
+  /* 自由度が低いときは、構図が読めない参照を軸にできない */
+  .card.blocked{opacity:.34}
+  .card.blocked .thumb{filter:grayscale(1)}
+  .card.blocked::after{content:"軸にできない";position:absolute;left:0;bottom:34px;
+    background:var(--line);color:var(--bg);font-size:10.5px;letter-spacing:.08em;padding:3px 9px}
   .card.on{opacity:1}
   .card.on .thumb{outline:2px solid var(--line);outline-offset:4px}
   .thumb{aspect-ratio:3/4;background:#fff;overflow:hidden;display:block;
@@ -270,12 +275,8 @@
   </div>
   <div class="col">
     <label>案の数</label>
-    <select id="variants">
-      <option value="2">2案</option>
-      <option value="3" selected>3案</option>
-      <option value="4">4案</option>
-    </select>
-    <div class="hint">それぞれ違う振り方をします</div>
+    <select id="variants"></select>
+    <div class="hint" id="vhint"></div>
   </div>
   <div class="col">
     <label>適用先</label>
@@ -364,7 +365,8 @@ function toDetail(cid){
   document.getElementById("cmeta").textContent=cur.members.length+" 件";
   document.getElementById("grid").innerHTML=cur.members.map(id=>{
     const it=byId[id]; if(!it) return "";
-    return '<div class="card" data-id="'+it.id+'">'+
+    const blocked = (sel.length===0 && strictMode() && it.src!=="GODLY");
+    return '<div class="card'+(blocked?" blocked":"")+'" data-id="'+it.id+'">'+
       '<div class="badge"></div>'+
       '<button class="ext zoom" data-zoom="'+it.id+'">拡大</button>'+
       '<div class="thumb"><img loading="lazy" referrerpolicy="no-referrer" src="'+it.thumb+'"'+
@@ -393,10 +395,21 @@ function toCats(){
 function fallback(img){ if(img.dataset.alt){img.src=img.dataset.alt;img.removeAttribute("data-alt");} }
 
 /* ---------- 選択 ---------- */
+// 自由度がこれ以下なら「真似たい」意図とみなし、構図が読めない参照を軸にさせない
+const STRICT_BELOW=30;
+function strictMode(){
+  const el=document.getElementById("freedom");
+  return el ? (+el.value) < STRICT_BELOW : false;
+}
 function toggle(id){
   const i=rankOf(id);
   if(i>=0){ sel.splice(i,1); sync(); return; }
   if(sel.length>=MAX){ setStatus(MAX+"枚まで。外してから選んでください","ng"); return; }
+  const it=byId[id];
+  if(sel.length===0 && strictMode() && it && it.src!=="GODLY"){
+    setStatus("自由度が低いので、軸はフルページのある GODLY から選んでください","ng");
+    return;
+  }
   sel.push({id:id, hint:""}); sync();
 }
 // バッジを押すと「軸」に繰り上げる
@@ -651,6 +664,31 @@ function released(n){
   for(const [name,wt] of AXES){ acc+=wt; if(acc<=n) out.push(name); else break; }
   return out;
 }
+// 自由度で作れる案の数は決まる。
+// 自由度0は「参照をそのまま再現する」なので、答えは1つしかない。
+// そこで3案out させると、2案は必ず参照から外れたものになる。
+function maxVariants(n){
+  if(n<=10) return 1;
+  if(n<=35) return 2;
+  if(n<=70) return 3;
+  return 4;
+}
+function syncVariants(){
+  const n=+document.getElementById("freedom").value;
+  const mx=maxVariants(n);
+  const sel=document.getElementById("variants");
+  const want=Math.min(+(sel.value||3)||3, mx);
+  let html="";
+  for(let i=1;i<=mx;i++) html+='<option value="'+i+'"'+(i===want?' selected':'')+'>'+i+'案</option>';
+  sel.innerHTML=html;
+  sel.disabled=(mx===1);
+  const note = mx===1
+    ? "自由度が低いので1案だけ。参照をそのまま再現するので、答えは1つしかありません"
+    : "動かせる幅が" + (mx<4 ? "狭いので最大"+mx+"案まで。" : "広いので")
+      + "それぞれ違う振り方をします";
+  document.getElementById("vhint").textContent=note;
+}
+
 function renderFreedom(){
   const n=+document.getElementById("freedom").value;
   document.getElementById("fv").textContent=n;
@@ -676,8 +714,29 @@ function renderFreedom(){
   }
   document.getElementById("fhint").innerHTML=lines.join('<br>');
   document.getElementById("fv").className="fnum"+(slipW?" slip":"");
+  syncVariants();
 }
-document.getElementById("freedom").oninput=renderFreedom;
+document.getElementById("freedom").oninput=function(){
+  renderFreedom();
+  if(cur) toDetail(cur.id);      // 軸にできる／できないの印を引き直す
+};
+
+// 表示と実質が離れているときは、押す前に止める。
+// 「10%＝ほとんど真似る」と思って押した人が、実質53%を受け取るのを防ぐ。
+const GAP_LIMIT=15;
+function confirmGap(n, slip, real){
+  if(!slip.length || real - n <= GAP_LIMIT) return true;
+  const it = byId[sel[0].id];
+  return confirm(
+    "自由度 " + n + "% を選びましたが、実質は " + real + "% になります。\n\n" +
+    "軸にした「" + (it ? it.name : "") + "」は" +
+    (it && it.src !== "GODLY" ? "ページ上部の切り抜きしか手元に無いため、" : "") +
+    slip.join("・") + " を読み取れません。\n" +
+    "読み取れない軸は再現できないので、案ごとに違う値になります。\n\n" +
+    "参照をなるべく真似たいなら、いったん中止して\n" +
+    "GODLY の参照（フルページがあるもの）を軸にし直すことをすすめます。\n\n" +
+    "このまま進めますか？");
+}
 
 async function decide(){
   if(!sel.length){ msg("まず1枚選んでください","" ); return; }
@@ -685,6 +744,8 @@ async function decide(){
   const un=unreadable();
   const fixedNow=AXES.map(a=>a[0]).filter(a=>!released(n).includes(a));
   const slip=fixedNow.filter(a=>un.includes(a));
+  const real=Math.min(100,n+AXES.filter(a=>slip.includes(a[0])).reduce((s,a)=>s+a[1],0));
+  if(!confirmGap(n, slip, real)){ msg("中止しました。軸を選び直せます",""); return; }
   const body={
     freedom:n, released:released(n),
     unreadable:slip,

@@ -26,6 +26,48 @@ import isolate
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
 
 # ファイル名 -> (ジョブ名, プロンプトの作り方, 使わせるツール, 制限時間)
+# 画面から来た値をそのまま信じない。
+# request.json に古い参照（別の案件で選んだもの）由来の
+# unreadable / effectiveFreedom が残ったまま自由度0で走り、
+# 実質43%として生成されたことがある。参照は picks.json が正。
+AXES = [("装飾量", 2), ("階層の跳ね", 4), ("コントラスト", 9), ("密度", 15),
+        ("地の明度", 20), ("主役", 22), ("構図", 28)]
+UNREADABLE = {"LAPA": ["構図", "密度"], "AWWWARDS": ["構図", "密度"], "GODLY": []}
+
+
+def _released(n):
+    out, acc = [], 0
+    for name, wt in AXES:
+        acc += wt
+        if acc <= n:
+            out.append(name)
+        else:
+            break
+    return out
+
+
+def _derive(data):
+    """自由度まわりを picks.json から引き直して data を上書きする。"""
+    try:
+        picks = json.load(open(paths.p("picks.json"), encoding="utf-8"))["picks"]
+    except Exception:
+        picks = []
+    n = int(data.get("freedom") or 0)
+    un = UNREADABLE.get((picks[0].get("src") if picks else ""), []) if picks else []
+    free = _released(n)
+    slip = [a for a, _ in AXES if a not in free and a in un]
+    real = min(100, n + sum(w for a, w in AXES if a in slip))
+
+    data["picks"] = [{"id": p.get("id"), "name": p.get("name"), "src": p.get("src")}
+                     for p in picks]
+    data["released"] = free
+    data["unreadable"] = slip
+    data["effectiveFreedom"] = real
+    data["variants"] = min(int(data.get("variants") or 1),
+                           isolate.max_variants(n))
+    return data
+
+
 JOB_FOR = {
     "assist": ("assist", lambda d: jobs.assist_prompt(d.get("brief", "")),
                ["Read", "Write", "Glob", "Grep"], 600),
@@ -142,6 +184,8 @@ class Handler(SimpleHTTPRequestHandler):
         if name == "assist" and not (data.get("brief") or "").strip():
             return self._json(400, {"error": "brief が空"})
 
+        if name == "request":
+            data = _derive(data)
         self._write(name, data)
         if name == "assist":
             # 手で直した brief を残して、次に開いたときの下書きにする

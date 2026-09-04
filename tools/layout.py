@@ -10,7 +10,7 @@
      （Webページの区切りは色ではなく余白で作られていることが多い）
   2. 地の色が「長く続けて」変わるところも切る。短い揺れは切らない
      （大きな画像の上下で行の最頻色が揺れるのを区切りと誤認しないため）
-  3. セクションの中をさらに空白で**行**に分け、行の中を横に切って**塊**にする
+  3. セクションの中は、つながっているものを**塊**として拾う（連結成分）
   4. 塊ごとに 文字／画像／色面 を見分ける
 
 しきい値はすべてページ幅（W）に対する比。余白は幅に比例して設計されるので、
@@ -28,7 +28,8 @@ W = 1000              # この幅に正規化してから読む
 
 GAP_FLOOR = 58        # これ未満の空白は行間。セクションの切れ目にはしない
 ROW_GAP = 15          # セクションの中で行を切る空白
-COL_GAP = 26          # 行の中で塊を切る横の空白
+DILATE_X = 13         # この幅だけ横に太らせて、文字の粒を1つの塊にまとめる
+DILATE_Y = 11         # この高さだけ縦に太らせて、行を段落にまとめる
 MIN_BLOCK = 22        # これより細い塊は無視
 MIN_ROW = 7           # これより低い行は無視
 MIN_SECTION = 26      # これより低いセクションは隣に併合
@@ -175,6 +176,36 @@ def _cuts(bg, rowfrac, H):
     return [(keep[i], keep[i + 1]) for i in range(len(keep) - 1)]
 
 
+def _blocks_in(strip, mask, y0, H):
+    """セクションの中身を、つながっている塊ごとに拾う。
+
+    横の投影で切っていたときは、背の高い帯の中に中央の見出しと
+    まわりに散らしたカードが同居していると、投影上はどこにも隙間が無く、
+    ぜんぶで1つの巨大な「文字」になっていた。
+    それを渡された側は「中央に見出し、まわりにカード」を再現しようがない。
+    太らせてから連結成分を取れば、離れて置かれたものは離れたまま出てくる。
+    """
+    k = cv2.getStructuringElement(cv2.MORPH_RECT, (DILATE_X, DILATE_Y))
+    n, lab, st, _ = cv2.connectedComponentsWithStats(cv2.dilate(mask, k), 8)
+    out = []
+    for i in range(1, n):
+        x, y, w, h = st[i][:4]
+        m = (lab[y:y + h, x:x + w] == i) & (mask[y:y + h, x:x + w] > 0)
+        ys, xs = np.where(m)
+        if not len(ys):
+            continue
+        # 太らせたぶんを削って、実際の中身の外接矩形に締め直す
+        x0, x1 = x + int(xs.min()), x + int(xs.max())
+        p, q = y + int(ys.min()), y + int(ys.max())
+        if x1 - x0 + 1 < MIN_BLOCK or q - p + 1 < MIN_ROW:
+            continue
+        out.append({
+            "x": round(x0 / W, 3), "w": round((x1 - x0 + 1) / W, 3),
+            "y": round((y0 + p) / H, 4), "h": round((q - p + 1) / H, 4),
+            "kind": _kind(strip[p:q + 1, x0:x1 + 1], mask[p:q + 1, x0:x1 + 1])})
+    return sorted(out, key=lambda b: (b["y"], b["x"]))
+
+
 def _kind(cell, mask):
     if mask.mean() < 0.015:
         return "空"
@@ -217,22 +248,7 @@ def extract(path_or_img):
         d = np.linalg.norm(strip.astype(np.float32) - base, axis=2)
         mask = (d > INK).astype(np.uint8)
 
-        blocks = []
-        # セクションの中をまず横帯（行）に割る。行を挟まないと、
-        # 縦に離れた別物が同じ x にあるだけで1つの塊になってしまう。
-        for (a, b) in _runs(mask.mean(axis=1) > EMPTY, ROW_GAP, MIN_ROW):
-            band, mband = strip[a:b + 1], mask[a:b + 1]
-            for (x0, x1) in _runs(mband.mean(axis=0) > 0.03, COL_GAP, MIN_BLOCK):
-                cell, mcell = band[:, x0:x1 + 1], mband[:, x0:x1 + 1]
-                ys = np.where(mcell.mean(axis=1) > 0.03)[0]
-                if not len(ys):
-                    continue
-                p, q = int(ys[0]), int(ys[-1])
-                blocks.append({
-                    "x": round(x0 / W, 3), "w": round((x1 - x0 + 1) / W, 3),
-                    "y": round((y0 + a + p) / H, 4), "h": round((q - p + 1) / H, 4),
-                    "kind": _kind(cell[p:q + 1], mcell[p:q + 1])})
-
+        blocks = _blocks_in(strip, mask, y0, H)
         secs.append({"y": round(y0 / H, 4), "h": round((y1 - y0) / H, 4),
                      "bg": "#%02x%02x%02x" % (int(base[2]), int(base[1]), int(base[0])),
                      "blocks": blocks})
@@ -305,11 +321,15 @@ def check(path, out=sys.stdout):
         print("  %-12s セクション %2d ／ 塊 %3d" % (name, res[-1][1], res[-1][2]), file=out)
     sec = [r[1] for r in res]
     blk = [r[2] for r in res]
-    # 塊は一致度の土台なので厳しく、セクション数は切れ目1本で変わるので緩く見る
-    ok = (max(sec) - min(sec) <= max(1, int(np.mean(sec) * 0.12)) and
-          max(blk) - min(blk) <= max(2, int(np.mean(blk) * 0.08)))
-    print("  → %s" % ("安定（この抽出で測ってよい）" if ok else
-                      "不安定（この抽出で測った数字は信用できない）"), file=out)
+    # 一致度は塊で決まるので、そこだけ厳しく見る。
+    # セクション数は切れ目1本の増減で変わるうえ一致度に使っていないので、
+    # 揺れていても「測れない」ことにはしない（ただし黙らず言う）。
+    ok = max(blk) - min(blk) <= max(2, int(np.mean(blk) * 0.08))
+    print("  → 塊 %s" % ("安定（この抽出で測ってよい）" if ok else
+                        "不安定（この抽出で測った数字は信用できない）"), file=out)
+    if max(sec) - min(sec) > 1:
+        print("     セクション数は %d〜%d で揺れる（一致度には使っていない）"
+              % (min(sec), max(sec)), file=out)
     return ok
 
 
