@@ -115,8 +115,18 @@
   .hidden{display:none}
 
   /* --- 自由度 --- */
-  #panel{position:sticky;bottom:0;z-index:15;background:var(--band);border-top:1px solid var(--line);
+  /* 画面の下端に固定。bottom を負にすると下端より下へ沈む（--drop は #pgrip が書き換える）。
+     sticky だとページ末尾では沈められないので fixed にし、場所を取らない分は --pspace で末尾に空ける */
+  body{padding-bottom:var(--pspace,0px)}
+  #panel{position:fixed;left:0;right:0;bottom:calc(var(--drop,0px) * -1);z-index:15;background:var(--band);border-top:1px solid var(--line);
     padding:24px 72px 28px;display:flex;gap:52px;align-items:flex-end;flex-wrap:wrap}
+  #pgrip{position:absolute;top:0;left:0;right:0;height:22px;cursor:ns-resize;touch-action:none;
+    user-select:none;-webkit-user-select:none}
+  #pgrip::before{content:"";position:absolute;left:50%;top:8px;width:44px;height:4px;margin-left:-22px;
+    border-top:1px solid var(--soft);border-bottom:1px solid var(--soft);transition:border-color .15s}
+  #pgrip:hover::before,#pgrip:focus-visible::before,#pgrip.drag::before{border-color:var(--line)}
+  #pgrip:focus-visible{outline:1px dashed var(--pick);outline-offset:-3px}
+  #pgrip.drag{cursor:grabbing}
   #panel .col{display:flex;flex-direction:column;gap:9px}
   #panel .col.grow{flex:1;min-width:300px}
   #panel label{font-family:var(--mincho);font-size:15px;font-weight:700;
@@ -267,6 +277,9 @@
 </div>
 
 <div id="panel">
+  <div id="pgrip" role="separator" aria-orientation="horizontal" tabindex="0"
+    aria-label="パネルの位置。上下にドラッグか矢印キーで動かせます。ダブルクリックで元に戻す"
+    title="上下にドラッグで位置を調整（ダブルクリックで元に戻す）"></div>
   <div class="col grow">
     <label>自由度 <span class="fnum" id="fv">50</span>%</label>
     <input type="range" id="freedom" min="0" max="100" step="5" value="50">
@@ -787,6 +800,65 @@ async function decide(){
   go.disabled=false;
 }
 function msg(t,c){ const e=document.getElementById("reqmsg"); e.textContent=t; e.className=c; }
+
+/* ---------- パネルの位置 ---------- */
+// パネルは画面の下端に貼り付く。つまみを下へドラッグすると下端より下へ沈められる。
+// 沈めても「自由度」の数字とバーは見える位置で止める（決定を押すときは戻す）。
+(function(){
+  const panel=document.getElementById("panel");
+  const grip=document.getElementById("pgrip");
+  const range=document.getElementById("freedom");
+  const KEY_DROP="panelDrop";
+  let want=0, drop=0;               // want=ユーザーが決めた量, drop=いま実際に沈めている量
+  const maxDrop=()=>Math.max(0,panel.offsetHeight-(range.offsetTop+range.offsetHeight+14));
+  const clamp=v=>Math.max(0,Math.min(maxDrop(),Math.round(v)));
+  function place(v){
+    want=Math.max(0,v);
+    drop=clamp(want);               // 画面が狭くなっても want は残し、戻れば元の位置に戻る
+    panel.style.setProperty("--drop",drop+"px");
+  }
+  function keep(){ try{ localStorage.setItem(KEY_DROP,String(drop)); }catch(e){} }
+
+  // ドラッグ中の move/up は window で受ける。つまみ自身で受けると、パネルの沈み方が
+  // マウスに追いつかない・上限で止まったときにポインタがつまみの外へ出て、そこで途切れる
+  let y0=0, d0=0;
+  function move(e){ place(clamp(d0+e.clientY-y0)); }
+  function release(){
+    grip.classList.remove("drag");
+    window.removeEventListener("pointermove",move);
+    window.removeEventListener("pointerup",release);
+    window.removeEventListener("pointercancel",release);
+    want=drop; keep();
+  }
+  grip.addEventListener("pointerdown",function(e){
+    if(e.button!==0) return;
+    y0=e.clientY; d0=drop;
+    grip.classList.add("drag");
+    window.addEventListener("pointermove",move);
+    window.addEventListener("pointerup",release);
+    window.addEventListener("pointercancel",release);
+    try{ grip.setPointerCapture(e.pointerId); }catch(err){}   // ウィンドウの外へ出ても追えるように（効かなくても上で足りる）
+    e.preventDefault();                                        // ドラッグ中に文字が選択されないように
+  });
+  grip.addEventListener("dblclick",function(){ place(0); keep(); });
+  grip.addEventListener("keydown",function(e){
+    const step={ArrowDown:24,ArrowUp:-24}[e.key];
+    if(step===undefined && e.key!=="Home") return;
+    e.preventDefault();
+    place(e.key==="Home" ? 0 : clamp(drop+step)); keep();
+  });
+
+  // パネルは場所を取らない（fixed）ので、高さ分を末尾に空けて最後のカードが隠れないようにする。
+  // 案の数の注記などで高さが変わる・画面幅が変わると上限も変わるので、そのたびに置き直す
+  function fit(){
+    document.body.style.setProperty("--pspace",panel.offsetHeight+"px");
+    place(want);
+  }
+  try{ want=Math.max(0,+localStorage.getItem(KEY_DROP)||0); }catch(e){}
+  fit();
+  if(window.ResizeObserver) new ResizeObserver(fit).observe(panel);
+  window.addEventListener("resize",fit);
+})();
 
 renderFreedom();
 load();
