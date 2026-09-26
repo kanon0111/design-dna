@@ -1,34 +1,29 @@
 /*
-  案 a — 「密度」だけを振る（疎 → 中）。地・色・文字の段・罫線は参照の値のまま。
-  自由度 50%（セクション数は保つ／中の配置は組み替え可）。
+  案 c — 「コントラスト（低→高）」「階層の跳ね（中→極端）」「装飾量（罫線→装飾的）」を振る。
+  地はライト基調、密度は疎のまま（参照の値）。自由度 50%。
 
   参照 layout.json の使い方
-  - ヒーロー（sec1）: 散らした画像10枚を layout の x / w をそのまま % で、y / h を
-    ページ高 7507px（1280 × aspect 5.865）換算の px で置いた。中央の見出し・CTA も中央のまま。
-    ずらしたのは: ナビ文字（content.md に無い）とロゴ帯（素材も文言も無い）を落とし、
-    ヒーロー高を 1097px → 960px に詰めた。見出しは和文のため 52px → 44px。
-  - 導入（sec2）: 参照と同じ x .269 / w .459 の段に、黒のリード＋灰の続きで組む。上下の余白を 316px → 260px。
-  - 数値の4段（sec3+4）: 縦罫の4段（x .037 / .268 / .5 / .731）と上の小ラベル・下の通し番号を保持。
-    参照の「ラベル → 230px 下に大きい数値」を 120px に詰めた（密度 中）。
-  - What we do（sec5）: 見出し＋罫線の行。左に文字、中央（x .371 / w .258）にぼかし面、を保持。
-    参照は4行 → メニューが3品なので3行。右の縦リストは文言が無いので置かない。行高 507px → 420px。
-  - Trusted by（sec6）と Get started（sec7-8）: 証言・ロゴ・導線4枚ぶんの文言が無いので丸ごと落とした。
-  - 暗帯（sec9-12）: 「Talk with sales →」の位置に「予約する →」、末尾の巨大ロゴタイプと著作権表示を保持。
-    6段のサイトマップはリンクが無いので落とした。
+  - ヒーロー（sec1）: 散らした画像10枚は layout の x / w（%）と y / h（7507px 換算 px）のまま。
+    中央の見出しだけ 52px → 88px に跳ねさせ（階層 極端）、面の中のガラス板は外した。
+    ナビ文字とロゴ帯は文言が無いので落とし、高さ 1097px → 1000px。
+  - 導入（sec2）: x .269 は保持、級数を 22px → 30px に上げたぶん段幅を w .459 → .52 に広げた（住所を1行に収めるため）。
+  - 数値の段（sec3+4）: 参照の「縦罫4段」を「左に段見出し／右半分（x .5〜.962）に横罫の3行」に組み替え。
+    値を 60px に上げ、ラベルとの級数差を極端にした。
+  - What we do（sec5）: 見出し＋横罫の行は保持。中央のぼかし面（x .371 / w .258）は1・3行目で保持し、
+    2行目だけ左右を入れ替えた（文字を右 x .80、面を左 x .037）。参照で縦リストがあった右側には、
+    地との差 9/255 の巨大な通し番号を敷いた（装飾的）。
+  - Trusted by（sec6）・Get started（sec7-8）: 文言が無いので落とした。
+  - 暗帯（sec9-12）: 地を #1a1a1a → #0d0d0d に沈め、「予約する →」を 37px → 72px。ロゴタイプと著作権は保持。
 */
 
 :root {
   --ground: #f7f7f7;
   --ground-2: #f8f8f8;
-  --dark: #1a1a1a;
-  --ink: #141414;      /* 見出し */
-  --body: #767676;     /* 本文 */
-  --label: #a4a4a4;    /* ラベル・通し番号 */
-  --rule: #ececec;     /* 地との差 11/255 */
-  --d-ink: #f2f2f2;
-  --d-body: #a6a6a6;
-  --d-label: #6a6a6a;
-  --d-rule: #282828;
+  --dark: #0d0d0d;
+  --ink: #000000;      /* 見出し */
+  --body: #4f4f4f;     /* 本文 */
+  --label: #8c8c8c;    /* ラベル */
+  --rule: #e8e8e8;
   --gutter: 3.7%;
 }
 
@@ -44,26 +39,16 @@ html, body {
 
 a { color: inherit; text-decoration: none; }
 
-/* ---------- ぼかし面（参照の画像カードの役割：空気として色を運ぶ） ---------- */
+/* ---------- ぼかし面（ガラス板なし、より深くぼかす） ---------- */
 .plane { position: absolute; }
 .plane::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 18%;
+  border-radius: 22%;
   background: var(--g);
-  filter: blur(14px);
+  filter: blur(20px);
 }
-.glass {
-  position: absolute;
-  inset: 20% 17%;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, .2);
-  border: 1px solid rgba(255, 255, 255, .34);
-  backdrop-filter: blur(6px);
-}
-.glass.tall { inset: 12% 24% 0 24%; border-radius: 16px 16px 0 0; border-bottom: 0; }
-.glass.low { inset: 34% 14% 26% 14%; }
 
 .p-sky    { --g: radial-gradient(circle at 70% 25%, #e8f4fb 0 18%, transparent 55%), linear-gradient(150deg, #9fd0ee, #3f8fcf 70%, #2c73b8); }
 .p-berry  { --g: radial-gradient(circle at 25% 80%, #f6d2c9 0 15%, transparent 50%), linear-gradient(135deg, #e0717f, #b8324a 65%, #8d2335); }
@@ -79,7 +64,7 @@ a { color: inherit; text-decoration: none; }
 /* ---------- sec1 ヒーロー ---------- */
 .hero {
   position: relative;
-  height: 960px;
+  height: 1000px;
   background: var(--ground);
   overflow: hidden;
 }
@@ -94,7 +79,6 @@ a { color: inherit; text-decoration: none; }
   font-size: 17px;
   letter-spacing: -.01em;
 }
-/* layout.json の x / w は %、y / h は 7507px 換算 */
 .pl1  { left: 31.8%; width: 27.3%; top: 0;     height: 280px; }
 .pl2  { left: 62.4%; width: 19.1%; top: 54px;  height: 245px; }
 .pl3  { left: 96.3%; width: 11%;   top: 77px;  height: 194px; }
@@ -105,29 +89,36 @@ a { color: inherit; text-decoration: none; }
 .pl8  { left: 4.6%;  width: 18.3%; top: 659px; height: 229px; }
 .pl9  { left: 59.3%; width: 16.8%; top: 659px; height: 212px; }
 .pl10 { left: 30%;   width: 16.3%; top: 708px; height: 202px; }
-.pl1::before { border-radius: 0 0 22% 22%; }
+.pl1::before { border-radius: 0 0 26% 26%; }
 
 .hero-copy {
   position: absolute;
-  top: 404px;
+  top: 372px;
   left: 0;
   right: 0;
   z-index: 2;
   text-align: center;
 }
 .hero-copy h1 {
-  font-size: 44px;
+  font-size: 88px;
   font-weight: 400;
-  line-height: 1.3;
+  line-height: 1;
+  letter-spacing: -.04em;
   color: var(--ink);
+}
+.sub {
+  margin-top: 22px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--body);
 }
 .btn {
   display: inline-block;
-  margin-top: 40px;
+  margin-top: 26px;
   padding: 9px 14px;
   border-radius: 4px;
-  background: #151515;
-  color: #f7f7f7;
+  background: #000;
+  color: #fff;
   font-size: 13px;
   line-height: 1.2;
 }
@@ -135,124 +126,139 @@ a { color: inherit; text-decoration: none; }
 /* ---------- sec2 導入 ---------- */
 .intro {
   background: var(--ground-2);
-  padding: 120px 0 140px;
+  padding: 150px 0 180px;
 }
 .statement {
   margin-left: 26.9%;
-  width: 45.9%;
-  font-size: 22px;
-  line-height: 1.5;
-  color: var(--body);
+  width: 52%;
+  font-size: 30px;
+  line-height: 1.45;
+  color: var(--ink);
 }
-.statement .lead { color: var(--ink); letter-spacing: -.01em; }
+.statement .dim { color: var(--label); font-size: 15px; }
 
-/* ---------- sec3+4 営業時間（数値の4段） ---------- */
+/* ---------- sec3+4 営業時間（横罫の表に組み替え） ---------- */
 .hours {
-  background: var(--ground-2);
-  padding: 40px var(--gutter) 90px;
-}
-.cols {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-}
-.col {
   position: relative;
-  height: 300px;
-  padding: 8px 9px 0;
-  border-left: 1px solid var(--rule);
+  background: var(--ground-2);
+  padding: 60px var(--gutter) 200px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
 }
-.col:last-child { border-right: 1px solid var(--rule); }
-.label {
+.hours h2 {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--body);
+  padding-top: 18px;
+}
+.table { border-top: 1px solid var(--rule); }
+.tr {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 26px 0 30px;
+  border-bottom: 1px solid var(--rule);
+}
+.tr dt {
   font-size: 11px;
   font-weight: 500;
   color: var(--label);
 }
-.num {
-  margin-top: 112px;
-  font-size: 34px;
-  line-height: 1.2;
-  letter-spacing: -.01em;
+.tr dd {
+  font-size: 60px;
+  line-height: 1;
+  letter-spacing: -.02em;
   color: var(--ink);
 }
-.idx {
-  font-size: 9px;
-  color: var(--label);
-  letter-spacing: .04em;
-}
-.col .idx { position: absolute; left: 9px; bottom: 6px; }
 
-/* ---------- sec5 おすすめメニュー（What we do） ---------- */
+/* ---------- sec5 おすすめメニュー ---------- */
 .menu {
   background: var(--ground);
-  padding: 150px var(--gutter) 120px;
+  padding: 120px var(--gutter) 160px;
 }
 .menu h2 {
-  font-size: 37px;
+  font-size: 72px;
   font-weight: 400;
-  line-height: 1.2;
-  margin-bottom: 70px;
+  line-height: 1.1;
+  margin-bottom: 110px;
 }
 .row {
   position: relative;
-  height: 420px;
+  height: 520px;
   border-top: 1px solid var(--rule);
+  overflow-x: visible;
+  overflow-y: clip;
 }
 .row:last-of-type { border-bottom: 1px solid var(--rule); }
-.row > .idx { position: absolute; top: -16px; left: 0; }
+.ghost-n {
+  position: absolute;
+  right: -.04em;
+  bottom: -.2em;
+  font-size: 300px;
+  line-height: 1;
+  letter-spacing: -.05em;
+  color: #eeeeee;   /* 地との差 9/255 */
+}
 .row-text {
   position: absolute;
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 14em;
   font-size: 14px;
+  z-index: 1;
 }
+.row-text p { width: 14em; }
 .row-text h3 {
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
+  white-space: nowrap;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.3;
   color: var(--ink);
-  margin-bottom: 4px;
+  margin-bottom: 14px;
 }
 .row-text p {
-  line-height: 1.5;
+  line-height: 1.6;
   color: var(--body);
 }
-/* 参照 x .371 / w .258 を、左右 3.7% の余白を引いた行幅に換算 */
 .row-img {
   left: 36.1%;
   width: 27.9%;
-  top: 60px;
-  height: 300px;
+  top: 80px;
+  height: 360px;
 }
+/* 2行目：面を左端、文字を右寄り、番号を左下へ */
+.flip .row-img { left: 2%; }
+.flip .row-text { left: 67%; }
+.flip .ghost-n { right: auto; left: 36%; }
 
 /* ---------- sec9 暗帯：予約 ---------- */
 .reserve {
   background: var(--dark);
-  padding: 132px var(--gutter) 96px;
+  padding: 150px var(--gutter) 120px;
 }
 .cta-big {
-  font-size: 37px;
-  line-height: 1.2;
-  color: var(--d-ink);
+  font-size: 72px;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+  color: #fff;
 }
 
-/* ---------- sec11-12 暗帯：ロゴタイプと著作権 ---------- */
+/* ---------- sec11-12 ロゴタイプと著作権 ---------- */
 .foot {
   background: var(--dark);
   padding: 0 var(--gutter) 36px;
 }
 .ghost {
-  border-top: 1px solid var(--d-rule);
+  border-top: 1px solid #1f1f1f;
   padding-top: 150px;
   font-size: 150px;
   line-height: 1;
   letter-spacing: -.04em;
   white-space: nowrap;
-  color: #242424;   /* 地との差 10/255 */
+  color: #181818;   /* 地との差 11/255 */
 }
 .copy {
   margin-top: 90px;
   font-size: 11px;
-  color: var(--d-label);
+  color: #6a6a6a;
 }

@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cafe Little Leaf</title>
-<link rel="stylesheet" href="styles.css">
+<title>Cafe Little Leaf｜東京・神宮前の喫茶店</title>
+<meta name="description" content="東京・神宮前の喫茶店 Cafe Little Leaf。浅煎りのリーフブレンドと季節のフルーツタルトで、ひと休みを。">
+<link rel="stylesheet" href="index-2.css">
 </head>
 <body>
 
@@ -31,40 +32,42 @@
   </div>
 </header>
 
-<section class="intro">
+<main>
+
+<section class="intro" aria-label="店舗情報">
   <p class="statement"><span class="lead">Cafe Little Leaf</span><br>〒150-0001 東京都渋谷区神宮前1-2-3 リトルリーフビル 1F</p>
 </section>
 
-<section class="hours">
+<section class="hours" aria-labelledby="hours-title">
   <div class="cols">
     <div class="col">
-      <p class="label">&nbsp;</p>
-      <p class="num">営業時間</p>
-      <span class="idx">01</span>
+      <p class="label" aria-hidden="true">&nbsp;</p>
+      <h2 class="num" id="hours-title">営業時間</h2>
+      <span class="idx" aria-hidden="true">01</span>
     </div>
     <div class="col">
       <p class="label">平日</p>
       <p class="num">8:00 - 19:00</p>
-      <span class="idx">02</span>
+      <span class="idx" aria-hidden="true">02</span>
     </div>
     <div class="col">
       <p class="label">土日祝</p>
       <p class="num">9:00 - 18:00</p>
-      <span class="idx">03</span>
+      <span class="idx" aria-hidden="true">03</span>
     </div>
     <div class="col">
       <p class="label">定休日</p>
       <p class="num">水曜日</p>
-      <span class="idx">04</span>
+      <span class="idx" aria-hidden="true">04</span>
     </div>
   </div>
 </section>
 
-<section class="menu">
-  <h2>おすすめメニュー</h2>
+<section class="menu" aria-labelledby="menu-title">
+  <h2 id="menu-title">おすすめメニュー</h2>
 
   <article class="row">
-    <span class="idx">01</span>
+    <span class="idx" aria-hidden="true">01</span>
     <div class="row-text">
       <h3>リーフブレンド</h3>
       <p>浅煎りの豆を使った、すっきり飲みやすい看板コーヒー。</p>
@@ -73,7 +76,7 @@
   </article>
 
   <article class="row">
-    <span class="idx">02</span>
+    <span class="idx" aria-hidden="true">02</span>
     <div class="row-text">
       <h3>季節のフルーツタルト</h3>
       <p>その日仕入れた果物をたっぷりのせた、日替わりのタルト。</p>
@@ -82,7 +85,7 @@
   </article>
 
   <article class="row">
-    <span class="idx">03</span>
+    <span class="idx" aria-hidden="true">03</span>
     <div class="row-text">
       <h3>自家製レモンソーダ</h3>
       <p>はちみつ漬けレモンを炭酸で割った、暑い日のおすすめ。</p>
@@ -91,9 +94,12 @@
   </article>
 </section>
 
-<section class="reserve" id="reserve">
+<section class="reserve" id="reserve" aria-label="予約">
+  <!-- 予約先（電話・予約フォームのURL）が content に無いため未設定。決まったら href を差し替える -->
   <a class="cta-big" href="#reserve">予約する →</a>
 </section>
+
+</main>
 
 <footer class="foot">
   <p class="ghost" aria-hidden="true">Cafe Little Leaf</p>

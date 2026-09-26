@@ -1,145 +1,260 @@
-/* 案 b  ─ 自由度30%（予算28を消化）
- *
- * 解放した軸: 主役(22) → タイポ / 階層の跳ね(4) → 極端 / 装飾量(2) → テクスチャ
- * 固定した軸（= l162 の値を再現する。触らないのではない）:
- *   地の明度   = ライト基調 … 地は生成り #fdfbf9。暗い面を1枚も置かない
- *   密度       = 疎         … 塊と塊のあいだを大きく空け、1塊1事項に留める
- *   コントラスト = 低（トーナル）… 黒も白も使わない。文字は灰、面は淡色どうしの差だけ
- * 読み取れなかった軸: 構図 → 対角 を選択（固定できないので案ごとに選ぶ）
- *
- * DNA: 書体2系統 / 強調は級数と余白だけ / 色は素材由来の面としてのみ /
- *      境界は色の切り替わり（テクスチャは装飾であって境界ではない） /
- *      矩形のまま / 字間はラテン文字だけ / CTA を塗らない
- */
+/*
+  案 b — 「地の明度」を振る（ライト基調 → ダーク基調）。密度・文字の段・罫線は参照の値。
+  自由度 50%（セクション数は保つ／中の配置は組み替え可）。
+
+  参照 layout.json の使い方
+  - ヒーロー（sec1）: 散らした画像10枚は layout の x / w（%）と y / h（7507px 換算 px）のまま。
+    中央の「見出し＋副文＋CTA」の縦積みも参照どおり（見出しに店名、副文にキャッチ）。
+    ナビ文字とロゴ帯は文言が無いので落とし、高さ 1097px → 1000px。
+    地を #1a1a1a にしたので、ぼかし面は暗い地の上で光として浮く。
+  - 導入（sec2）: x .269 / w .459 の段のまま。郵便番号を一段落とした色、住所を明るい色で組む。
+  - 数値の段（sec3+4）: 参照は縦罫4段（.037/.268/.5/.731）。営業時間は3項目なので
+    同じ全幅を3等分に組み替え（境界 .345 / .654）、段見出し「営業時間」を小ラベルで上に出した。
+  - What we do（sec5）: 参照の「左文字／中央画像／右リスト」の行を、参照 sec7-8（Get started）の
+    「縦罫の段に ラベル→題→下にぼかし面」の組みに差し替えて3段横並びにした。見出し位置 x .038 は保持。
+  - Trusted by（sec6）・Get started（sec7-8）: 文言が無いので落とした（Get started の組みは上で流用）。
+  - 暗帯（sec9-12）: 「予約する →」とロゴタイプ・著作権。全体が暗いので、末尾はさらに一段暗い #111 に落として帯の切り替えを残した。
+*/
 
 :root {
-  /* l162 からの実測値をそのまま使う（地の明度は固定なので再現する） */
-  --ground: #fdfbf9;  /* 生成り */
-  --mist:   #ecf0ef;
-  --peach:  #fbe9d8;
-  --sage:   #cfddbb;
-
-  /* コントラスト=低。最も濃い文字でも #4a504a 止まりで、黒は置かない */
-  --text:  #6b706a;
-  --head:  #4a504a;
-  --faint: #8b908a;
-
-  --serif: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
-  --sans:  "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+  --ground: #1a1a1a;
+  --ground-2: #1d1d1d;
+  --deep: #111111;
+  --ink: #f0f0f0;      /* 見出し */
+  --body: #a0a0a0;     /* 本文 */
+  --label: #666666;    /* ラベル・通し番号 */
+  --rule: #2a2a2a;     /* 地との差 16/255 */
+  --gutter: 3.7%;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* 装飾量=テクスチャ。地の全面に細かい粒を敷く。
-   境界を作る役には使わない（DNA 4）ので、面の切れ目に合わせて変化させない。 */
-body {
-  background-color: var(--ground);
-  background-image:
-    radial-gradient(circle at 1px 1px, rgba(107, 112, 106, .085) 1px, transparent 0),
-    radial-gradient(circle at 4px 5px, rgba(107, 112, 106, .05) 1px, transparent 0);
-  background-size: 7px 7px, 11px 11px;
-  color: var(--text);
-  font-family: var(--sans);
-  font-size: 13px;
-  line-height: 2.2;
+html, body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", "Yu Gothic", sans-serif;
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── 構図=対角 ────────────────────────────────────
-   5つの塊が、左下から右上へ段を上がるように寄っていく。 */
-.sheet {
+a { color: inherit; text-decoration: none; }
+
+/* ---------- ぼかし面 ---------- */
+.plane { position: absolute; }
+.plane::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18%;
+  background: var(--g);
+  filter: blur(16px);
+  opacity: .92;
+}
+.glass {
+  position: absolute;
+  inset: 20% 17%;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .22);
+  backdrop-filter: blur(6px);
+}
+.glass.tall { inset: 12% 24% 0 24%; border-radius: 16px 16px 0 0; border-bottom: 0; }
+.glass.low { inset: 34% 14% 26% 14%; }
+
+.p-sky    { --g: radial-gradient(circle at 70% 25%, #d6ecf8 0 16%, transparent 55%), linear-gradient(150deg, #8cc4e8, #3a86c6 70%, #235f9c); }
+.p-berry  { --g: radial-gradient(circle at 25% 80%, #f1c3b8 0 15%, transparent 50%), linear-gradient(135deg, #d9606f, #a92a42 65%, #6f1a2a); }
+.p-coffee { --g: radial-gradient(circle at 30% 30%, #e9cfae 0 14%, transparent 52%), linear-gradient(145deg, #b77f50, #6f4127 60%, #3a2215); }
+.p-mint   { --g: radial-gradient(circle at 65% 35%, #b2dccd 0 14%, transparent 50%), linear-gradient(140deg, #3a9282, #285f52 60%, #5f8a49); }
+.p-leaf   { --g: radial-gradient(circle at 40% 30%, #c0d597 0 14%, transparent 52%), linear-gradient(160deg, #679245, #365c28 60%, #203a19); }
+.p-sage   { --g: radial-gradient(circle at 60% 20%, #cfdabd 0 14%, transparent 50%), linear-gradient(170deg, #86a679, #52704d 55%, #304a32); }
+.p-soda   { --g: radial-gradient(circle at 30% 40%, #f4fffd 0 12%, transparent 45%), linear-gradient(120deg, #94d2ce, #43a6aa 55%, #b9e3dc); }
+.p-peach  { --g: radial-gradient(circle at 30% 30%, #f8d6b2 0 14%, transparent 50%), linear-gradient(150deg, #e9a56b, #cf723d 60%, #a4502f); }
+.p-cream  { --g: radial-gradient(circle at 50% 30%, #f2e8d8 0 18%, transparent 55%), linear-gradient(170deg, #d8c6ac, #a8937a 60%, #5e5345); }
+.p-lemon  { --g: radial-gradient(circle at 35% 30%, #fff8d2 0 14%, transparent 50%), linear-gradient(150deg, #ecd96a, #cfb53c 55%, #98ba5c); }
+
+/* ---------- sec1 ヒーロー ---------- */
+.hero {
+  position: relative;
+  height: 1000px;
+  background: var(--ground);
+  overflow: hidden;
+}
+.brand {
+  position: absolute;
+  top: 22px;
+  left: 3.8%;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  letter-spacing: -.01em;
+}
+.pl1  { left: 31.8%; width: 27.3%; top: 0;     height: 280px; }
+.pl2  { left: 62.4%; width: 19.1%; top: 54px;  height: 245px; }
+.pl3  { left: 96.3%; width: 11%;   top: 77px;  height: 194px; }
+.pl4  { left: 7.9%;  width: 17.5%; top: 93px;  height: 221px; }
+.pl5  { left: 77.1%; width: 20.3%; top: 336px; height: 257px; }
+.pl6  { left: 1%;    width: 19.6%; top: 366px; height: 249px; }
+.pl7  { left: 84.8%; width: 14.9%; top: 630px; height: 191px; }
+.pl8  { left: 4.6%;  width: 18.3%; top: 659px; height: 229px; }
+.pl9  { left: 59.3%; width: 16.8%; top: 659px; height: 212px; }
+.pl10 { left: 30%;   width: 16.3%; top: 708px; height: 202px; }
+.pl1::before { border-radius: 0 0 22% 22%; }
+
+.hero-copy {
+  position: absolute;
+  top: 392px;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  text-align: center;
+}
+.hero-copy h1 {
+  font-size: 54px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -.025em;
+  color: var(--ink);
+}
+.sub {
+  margin-top: 14px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--body);
+}
+.btn {
+  display: inline-block;
+  margin-top: 26px;
+  padding: 9px 14px;
+  border-radius: 4px;
+  background: #f0f0f0;
+  color: #151515;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+/* ---------- sec2 導入 ---------- */
+.intro {
+  background: var(--ground-2);
+  padding: 150px 0 170px;
+}
+.statement {
+  margin-left: 26.9%;
+  width: 45.9%;
+  font-size: 22px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.statement .dim { color: var(--body); }
+
+/* ---------- sec3+4 営業時間 ---------- */
+.hours {
+  background: var(--ground-2);
+  padding: 20px var(--gutter) 120px;
+}
+.label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--label);
+}
+.label.head { margin: 0 0 18px 9px; color: var(--body); }
+.cols {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  padding: 10rem 4vw 12rem;
-  row-gap: 14rem;          /* 密度=疎 */
+  grid-template-columns: repeat(3, 1fr);
 }
+.col {
+  position: relative;
+  height: 400px;
+  padding: 8px 9px 0;
+  border-left: 1px solid var(--rule);
+}
+.col:last-child { border-right: 1px solid var(--rule); }
+.num {
+  margin-top: 200px;
+  font-size: 37px;
+  line-height: 1.2;
+  letter-spacing: -.01em;
+  color: var(--ink);
+}
+.idx {
+  font-size: 9px;
+  color: var(--label);
+  letter-spacing: .04em;
+}
+.col .idx { position: absolute; left: 9px; bottom: 6px; }
 
-.block   { min-width: 0; }
-.step1   { grid-column: 1 / 9;  }
-.step2   { grid-column: 2 / 11; }
-.step3   { grid-column: 4 / 12; }
-.step4   { grid-column: 7 / 13; }
-.step5   { grid-column: 8 / 13; }
-
-/* ── 主役=タイポ ──────────────────────────────────
-   面ではなく文字がページの物体。店名は版面の幅いっぱいを占める。
-   階層=極端。店名(約9.5倍) → 品名(約2.6倍) → 本文(1倍) → ラベル(0.72倍)。 */
-h1 {
-  font-family: var(--serif);
+/* ---------- sec5 おすすめメニュー（Get started の段組みで） ---------- */
+.menu {
+  background: var(--ground);
+  padding: 200px var(--gutter) 200px;
+}
+.menu h2 {
+  font-size: 37px;
   font-weight: 400;
-  font-size: clamp(3.4rem, 11.5vw, 8.4rem);
-  line-height: 1.02;
-  letter-spacing: -.015em;   /* 字間の芸はラテン文字にだけ（DNA 6） */
-  color: var(--head);
+  line-height: 1.2;
+  margin-bottom: 100px;
 }
-
-.lede {
-  margin-top: 3.5rem;
-  max-width: 20em;           /* 和文なので em */
-  font-size: 1rem;
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
 }
-
-h2 {
-  font-family: var(--sans);
+.card {
+  position: relative;
+  height: 620px;
+  padding: 8px 9px 0;
+  border-left: 1px solid var(--rule);
+  overflow: hidden;
+}
+.card:last-child { border-right: 1px solid var(--rule); }
+.card h3 {
+  margin-top: 6px;
+  font-size: 15px;
   font-weight: 400;
-  font-size: .72rem;
-  color: var(--faint);
-  margin-bottom: 5rem;
-}
-
-/* 品目もそれぞれ段を上げて、塊の中でも対角を保つ */
-.menu   { display: grid; row-gap: 6rem; }
-.item   { max-width: 30em; }
-.item:nth-child(2) { margin-left: 12%; }
-.item:nth-child(3) { margin-left: 24%; }
-
-dt {
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: clamp(1.9rem, 3.6vw, 2.4rem);
   line-height: 1.4;
-  color: var(--head);
+  color: var(--ink);
+}
+.card p {
+  margin-top: 6px;
+  width: 14em;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--body);
+}
+.card-img {
+  left: 12%;
+  width: 82%;
+  top: 250px;
+  height: 300px;
 }
 
-dd {
-  margin-top: 1.4rem;
-  max-width: 22em;
-  font-size: 1rem;
+/* ---------- sec9 暗帯：予約 ---------- */
+.reserve {
+  background: var(--deep);
+  padding: 132px var(--gutter) 110px;
+}
+.cta-big {
+  font-size: 37px;
+  line-height: 1.2;
+  color: var(--ink);
 }
 
-/* 営業時間。淡い面を1枚だけ敷くが、文字より前に出ない大きさに留める */
-.step3 {
-  background: var(--mist);
-  padding: 5rem 4rem 5.5rem;
+/* ---------- sec11-12 ロゴタイプと著作権 ---------- */
+.foot {
+  background: var(--deep);
+  padding: 0 var(--gutter) 36px;
 }
-.hour {
-  font-family: var(--serif);
-  font-size: 1.5rem;
-  line-height: 2.1;
-  color: var(--head);
+.ghost {
+  border-top: 1px solid #222;
+  padding-top: 150px;
+  font-size: 150px;
+  line-height: 1;
+  letter-spacing: -.04em;
+  white-space: nowrap;
+  color: #1c1c1c;   /* 地との差 11/255 */
 }
-
-/* CTA は塗らない（DNA 7）。級数と余白だけで立たせる */
-.step4 {
-  background: var(--sage);
-  padding: 4.5rem 3rem;
-}
-button {
-  background: none;
-  border: 0;
-  padding: 0;
-  font-family: var(--serif);
-  font-size: 2.2rem;
-  line-height: 1.4;
-  color: var(--head);
-  cursor: pointer;
-}
-
-.step5 p    { font-size: .82rem; color: var(--faint); }
-.step5 .copy { margin-top: 1.4rem; }
-
-@media (max-width: 720px) {
-  .sheet { row-gap: 9rem; padding: 6rem 6vw 8rem; }
-  .step1, .step2, .step3, .step4, .step5 { grid-column: 1 / 13; }
-  .item:nth-child(2), .item:nth-child(3) { margin-left: 0; }
+.copy {
+  margin-top: 90px;
+  font-size: 11px;
+  color: var(--label);
 }

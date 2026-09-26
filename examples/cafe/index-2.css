@@ -15,6 +15,8 @@
   - Trusted by（sec6）と Get started（sec7-8）: 証言・ロゴ・導線4枚ぶんの文言が無いので丸ごと落とした。
   - 暗帯（sec9-12）: 「Talk with sales →」の位置に「予約する →」、末尾の巨大ロゴタイプと著作権表示を保持。
     6段のサイトマップはリンクが無いので落とした。
+
+  本番化（index-2）: 1280px 幅の見た目は採用案のまま。狭い幅での崩れ止めだけを末尾に足した。
 */
 
 :root {
@@ -170,6 +172,7 @@ a { color: inherit; text-decoration: none; }
 .num {
   margin-top: 112px;
   font-size: 34px;
+  font-weight: 400;
   line-height: 1.2;
   letter-spacing: -.01em;
   color: var(--ink);
@@ -241,11 +244,12 @@ a { color: inherit; text-decoration: none; }
 .foot {
   background: var(--dark);
   padding: 0 var(--gutter) 36px;
+  overflow: hidden;
 }
 .ghost {
   border-top: 1px solid var(--d-rule);
   padding-top: 150px;
-  font-size: 150px;
+  font-size: clamp(56px, 11.7vw, 150px);   /* 1280px 幅で 150px */
   line-height: 1;
   letter-spacing: -.04em;
   white-space: nowrap;
@@ -255,4 +259,43 @@ a { color: inherit; text-decoration: none; }
   margin-top: 90px;
   font-size: 11px;
   color: var(--d-label);
+}
+
+/* ---------- 狭い幅：同じ部品のまま詰める ---------- */
+@media (max-width: 900px) {
+  .statement { margin-left: var(--gutter); width: auto; margin-right: var(--gutter); }
+  .cols { grid-template-columns: repeat(2, 1fr); }
+  .col:nth-child(2n) { border-right: 1px solid var(--rule); }
+  .col { height: 240px; }
+  .num { margin-top: 80px; font-size: 28px; }
+}
+
+@media (max-width: 640px) {
+  .hero-copy { padding: 0 21%; }
+  .hero-copy h1 { font-size: 26px; }
+
+  .intro { padding: 88px 0 96px; }
+  .statement { font-size: 18px; }
+
+  .hours { padding: 24px var(--gutter) 64px; }
+  .col { height: 200px; }
+  .num { margin-top: 56px; font-size: 22px; }
+
+  .menu { padding: 96px var(--gutter) 80px; }
+  .menu h2 { font-size: 28px; margin-bottom: 48px; }
+  .row { height: auto; padding: 40px 0 36px; }
+  .row-text { position: static; transform: none; width: auto; }
+  .row-img {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 72%;
+    height: 220px;
+    margin: 28px 0 0 14%;
+  }
+
+  .reserve { padding: 96px var(--gutter) 72px; }
+  .cta-big { font-size: 28px; }
+  .ghost { padding-top: 96px; }
+  .copy { margin-top: 56px; }
 }
