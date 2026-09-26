@@ -28,6 +28,16 @@ python "${CLAUDE_PLUGIN_ROOT}/tools/fetch_thumbs.py"
 227枚。数分かかる。**取得先は各サイトのCDN**で、集めた画像は各自の手元用。
 再配布しないこと（godly.design の robots.txt は `Content-Signal: ai-train=no` を掲げている）。
 
+## 3. GODLY のフルページを集める（推奨）
+
+```
+python "${CLAUDE_PLUGIN_ROOT}/tools/fetch_godly_sites.py"
+```
+
+GODLY の18件は、ページ全体のスクリーンショットが取れる。これがあると、GODLY を軸にしたとき
+ページの下の方まで組み方を参照から読める。無くても動くが、そのときは Lapa と同じく
+上部の画像だけから組み立てる。取得先・扱いは 2. と同じ（手元用、再配布しない）。
+
 これで `/design-dna:start` が使える状態になる。
 
 ## 参照を増やしたいとき
