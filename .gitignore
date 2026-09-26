@@ -7,6 +7,8 @@ cache/
 **/.design/decision.json
 **/.design/assist.json
 **/.design/_slices/
+# shoot.py の確認用スクリーンショット（生成・本番作成のたびに撮り直す）
+**/.design/shots/
 
 # 生成物（再生成できる）
 web/_redesign/picker-redesign.html
