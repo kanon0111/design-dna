@@ -4,12 +4,14 @@
 「構造を引き継ぐな」と指示しても、見えているものには引っ張られる。
 だから物理的に見せない。
 
-隔離環境に入れるのは4つだけ:
+隔離環境に入れるのはこれだけ:
 
     ref-1.png ...   参照画像（並び順そのまま。1枚目が軸）
-    content.md      載せる文言（HTMLではなくテキスト）
+    content.md      載せる文言（HTMLではなくテキスト。見出しの階層は残す）
     axes.md         軸と重み
-    brief.json      自由度・案数・読み取れない軸
+    polish.md       仕上げの決まり（寸法は内容の役割から決め直す）
+    shoot.py        できた案を描画して撮り、文字サイズを測る
+    brief.json      案数・文言が足りているか・画面の分け方
 
 既存の index.html / styles.css / 過去の案 / 他の適用先は**置かない**。
 生成後、できた案だけを `.design/gen/` へ回収する。
@@ -95,6 +97,29 @@ def _slice(src, out_dir, stem, width=760, chunk=1000):
     return names
 
 
+def _content_lines():
+    """載せる文言を返す。(行のリスト, 出どころ)
+
+    正は `.design/content.md`。利用者がチャットで伝えた「作りたいもの」から
+    /design-dna:start が書き起こしたもの。これが無いときだけ、既存の入口ページから拾う
+    （既にページがあって、それを作り直す場合）。
+    """
+    f = paths.p("content.md")
+    if os.path.exists(f):
+        out = []
+        for raw in io.open(f, encoding="utf-8").read().splitlines():
+            t = raw.rstrip()
+            if not t.strip() or t.strip().startswith("<!--"):
+                continue
+            # 見出しの印（# ## ###）と箇条書きの入れ子は残す。
+            # 前はここで落として文言だけの羅列にしていたため、どれが節の題名かが消え、
+            # 文字の大きさを参照の置き場所だけで決められていた（題名が 11px、中身が 40px）
+            out.append(t)
+        return out, "content.md"
+    page = _entry_page()
+    return (_text_from_html(page), os.path.basename(page)) if page else ([], "なし")
+
+
 def _entry_page():
     """適用先の入口ページを探す。"""
     root = paths.project_root()
@@ -105,15 +130,9 @@ def _entry_page():
     return None
 
 
-def max_variants(freedom):
-    """自由度から、作れる案の数の上限を出す。
-
-    自由度0は「参照をそのまま再現する」なので、正解は1つしかない。
-    そこで3案作らせると、2案は必ず参照から外れたものになる。
-    画面側と同じ規則をここにも置く（古い画面から来た値を信じないため）。
-    """
-    n = int(freedom or 0)
-    return 1 if n <= 10 else 2 if n <= 35 else 3 if n <= 70 else 4
+# 案は2つ固定: a＝参照の配置に近い / b＝雰囲気のまま内容に合わせて組む。
+# 古い request.json（自由度つき・3案）が残っていても、ここで2つに揃える。
+VARIANTS = 2
 
 
 def build():
@@ -165,27 +184,39 @@ def build():
                 layout.overlay(whole, lay, os.path.join(d, "layout-overlay.png"))
 
     # 文言。HTML ではなくテキストで渡す
-    page = _entry_page()
-    lines = _text_from_html(page) if page else []
+    lines, origin = _content_lines()
     brief = ""
     if os.path.exists(paths.p("brief.md")):
         brief = io.open(paths.p("brief.md"), encoding="utf-8").read().strip()
 
+    target = {}
+    try:
+        target = json.load(io.open(paths.p("target.json"), encoding="utf-8"))
+    except Exception:
+        pass
+    structure = "scroll" if target.get("structure") == "scroll" else "pages"
+    pages = target.get("pages") or []
+
     with io.open(os.path.join(d, "content.md"), "w", encoding="utf-8") as fh:
-        fh.write("# 載せる文言（これがすべて。ここに無いものを足さない）\n\n")
+        fh.write("<!-- 載せる文言。これがすべて。ここに無いものを足さない。"
+                 "見出しの印（# ## ###）がそのまま階層 -->\n\n")
+        structured = origin == "content.md"
         for t in lines:
-            fh.write("- %s\n" % t)
+            fh.write(("%s\n" if structured else "- %s\n") % t)
         if brief:
-            fh.write("\n## この案件について\n\n%s\n" % brief)
-        fh.write("\n**ここに無い要素（ナビゲーション、SNSリンク、キャンペーン等）を"
-                 "作らないこと。** 材料が少なく見えても、それがこのページの全部。\n")
+            fh.write("\n<!-- この案件について: %s -->\n" % brief.replace("\n", " "))
+        fh.write("\n<!-- ここに無い内容（SNSリンク、キャンペーン、架空の実績等）を作らないこと。"
+                 + ("画面を切り替えるナビと「次へ」だけは作る。" if structure == "pages"
+                    else "ナビゲーションも作らない。") + " -->\n")
 
     shutil.copy(paths.AXES, os.path.join(d, "axes.md"))
+    shutil.copy(paths.POLISH, os.path.join(d, "polish.md"))
+    shutil.copy(paths.SHOOT, os.path.join(d, "shoot.py"))
     if os.path.exists(paths.p("dna.md")):
         shutil.copy(paths.p("dna.md"), os.path.join(d, "dna.md"))
 
     # 文言の量が参照の入れ物に対して足りているか。
-    # 足りないまま自由度0で回すと、参照の骨格だけ残って中身が空のページになる。
+    # 足りないまま参照の組み方を使い切ろうとすると、骨格だけ残って中身が空のページになる。
     # 前に Lightspark（文字の塊58個）へカフェの文言22行を流し込んで、まさにそうなった。
     lay_path = os.path.join(d, "layout.json")
     holes = fill = 0
@@ -195,33 +226,29 @@ def build():
         fill = len(lines)
     short = holes and fill < holes * 0.6
 
-    nvar = min(int(req.get("variants") or 1), max_variants(req.get("freedom")))
+    nvar = VARIANTS
 
     json.dump({
         "contentHoles": holes,
         "contentLines": fill,
         "contentShort": bool(short),
-        "freedom": req.get("freedom"),
-        "released": req.get("released") or [],
-        "unreadable": req.get("unreadable") or [],
-        "effectiveFreedom": req.get("effectiveFreedom"),
         "variants": nvar,
         "refs": refs,
         "layout": "layout.json",
+        # pages = 画面を切り替える（既定）。pages が空なら content.md の ## から決める
+        "structure": structure,
+        "pages": pages,
     }, io.open(os.path.join(d, "brief.json"), "w", encoding="utf-8"),
         ensure_ascii=False, indent=1)
 
     w = io.TextIOWrapper(open(1, "wb", closefd=False), encoding="utf-8")
     print(d, file=w)
-    print("  参照 %d枚 / 文言 %d行 / 自由度 %s%%（実質 %s%%）/ %s案" % (
-        len(refs), len(lines), req.get("freedom"),
-        req.get("effectiveFreedom", req.get("freedom")), nvar), file=w)
-    if nvar < int(req.get("variants") or 1):
-        print("  案数を %s→%d に。自由度 %s%% では別案の作りようがない"
-              % (req.get("variants"), nvar, req.get("freedom")), file=w)
+    print("  参照 %d枚 / 文言 %d行（%s）/ %s案 / %s" % (
+        len(refs), len(lines), origin, nvar,
+        "画面切り替え %d画面" % len(pages) if structure == "pages" else "縦に1本"), file=w)
     if short:
         print("  注意: 参照の文字の入れ物 %d 個に対して文言 %d 行。"
-              "全部は埋まらないので、下のセクションは落とされる" % (holes, fill), file=w)
+              "参照の組み方は使い切らない" % (holes, fill), file=w)
     print("  既存のHTML・CSS・過去の案は置いていない", file=w)
     w.flush()
     return d

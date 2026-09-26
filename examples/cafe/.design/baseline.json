@@ -1,9 +1,0 @@
-{
-  "label": "最初の3案 — 曖昧な指示から出したもの",
-  "note": "「温かみのある」「モダンでミニマル」「高級感のある」とだけ伝えて作った。参照も軸も使っていない。",
-  "items": [
-    { "id": "warm",    "path": "/project/warm/",    "label": "A. 温かみのあるナチュラル" },
-    { "id": "minimal", "path": "/project/minimal/", "label": "B. モダンでミニマル" },
-    { "id": "luxe",    "path": "/project/luxe/",    "label": "C. 少し高級感のある感じ" }
-  ]
-}

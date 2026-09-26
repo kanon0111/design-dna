@@ -11,9 +11,11 @@
 
   POST /api/picks     -> .design/picks.json
   POST /api/request   -> .design/request.json  + 生成ジョブ起動
-  POST /api/decision  -> .design/decision.json
-  POST /api/assist    -> .design/assist.json   + ref選定ジョブ起動
+  POST /api/decision  -> .design/decision.json + 本番ページの作成ジョブ起動
   GET  /api/job?name= -> ジョブの状態
+
+本番のページができたら、その回の picker / compare は閉じる（選び直しは
+/design-dna:start から）。閉じている間は request / decision を受けない。
 """
 import json, os, sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -25,54 +27,88 @@ import isolate
 
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
 
-# ファイル名 -> (ジョブ名, プロンプトの作り方, 使わせるツール, 制限時間)
-# 画面から来た値をそのまま信じない。
-# request.json に古い参照（別の案件で選んだもの）由来の
-# unreadable / effectiveFreedom が残ったまま自由度0で走り、
-# 実質43%として生成されたことがある。参照は picks.json が正。
-AXES = [("装飾量", 2), ("階層の跳ね", 4), ("コントラスト", 9), ("密度", 15),
-        ("地の明度", 20), ("主役", 22), ("構図", 28)]
-UNREADABLE = {"LAPA": ["構図", "密度"], "AWWWARDS": ["構図", "密度"], "GODLY": []}
-
-
-def _released(n):
-    out, acc = [], 0
-    for name, wt in AXES:
-        acc += wt
-        if acc <= n:
-            out.append(name)
-        else:
-            break
-    return out
+# 案は2つ固定。案A＝参照の配置に近い、案B＝雰囲気のまま内容に合わせて組む。
+# 以前は自由度（0〜100%）で振れ幅を選ばせていたが、欲しいのは
+# 「選んだデザインっぽく、内容に合わせて」の一点だけで、数字は分かりにくさの元だった
+# （参照によって「実質68%」になる、0%は寸法まで写して読めなくなる、など）。
+VARIANTS = isolate.VARIANTS
 
 
 def _derive(data):
-    """自由度まわりを picks.json から引き直して data を上書きする。"""
+    """依頼を picks.json から組み直す。画面から来た値をそのまま信じない。"""
     try:
         picks = json.load(open(paths.p("picks.json"), encoding="utf-8"))["picks"]
     except Exception:
         picks = []
-    n = int(data.get("freedom") or 0)
-    un = UNREADABLE.get((picks[0].get("src") if picks else ""), []) if picks else []
-    free = _released(n)
-    slip = [a for a, _ in AXES if a not in free and a in un]
-    real = min(100, n + sum(w for a, w in AXES if a in slip))
+    return {"picks": [{"id": p.get("id"), "name": p.get("name"), "src": p.get("src")}
+                      for p in picks],
+            "variants": VARIANTS}
 
-    data["picks"] = [{"id": p.get("id"), "name": p.get("name"), "src": p.get("src")}
-                     for p in picks]
-    data["released"] = free
-    data["unreadable"] = slip
-    data["effectiveFreedom"] = real
-    data["variants"] = min(int(data.get("variants") or 1),
-                           isolate.max_variants(n))
+
+def _brief():
+    f = paths.p("brief.md")
+    if os.path.exists(f):
+        with open(f, encoding="utf-8") as fh:
+            return fh.read().strip()
+    return ""
+
+
+def _free(rel):
+    """rel が空いていればそのまま、埋まっていれば index-2.html のように番号を足す。"""
+    root = paths.project_root()
+    stem, ext = os.path.splitext(rel)
+    cand, n = rel, 2
+    while os.path.exists(os.path.join(root, cand)):
+        cand, n = "%s-%d%s" % (stem, n, ext), n + 1
+    return cand
+
+
+def _target(data):
+    """本番のページを書く場所を決めて data["out"] に入れる。
+
+    target.json（/design-dna:start が書く）を正とし、無ければ index.html。
+    画面を切り替えるか縦1本かも target.json の structure で決める。
+    既存ファイルを上書きしない判定は AI に任せず、ここで先に済ませる。
+    """
+    t = {}
+    try:
+        t = json.load(open(paths.p("target.json"), encoding="utf-8"))
+    except Exception:
+        pass
+    want = t.get("out") or "index.html"
+    data["out"] = _free(want.replace("\\", "/").lstrip("/"))
+    # pages = 画面を切り替える（既定）／ scroll = 縦に1本
+    data["structure"] = "scroll" if t.get("structure") == "scroll" else "pages"
     return data
 
 
+def _decision():
+    """decision.json に、本番ページができているか・作成中かを足して返す。"""
+    d = {}
+    try:
+        d = json.load(open(paths.p("decision.json"), encoding="utf-8"))
+    except Exception:
+        pass
+    out = d.get("out")
+    d["built"] = bool(out and os.path.exists(os.path.join(paths.project_root(), out)))
+    d["job"] = jobs.status("implement").get("status")
+    return d
+
+
+def _closed():
+    """この回はもう終わっている（本番ページができた）か、いま作っている最中か。"""
+    d = _decision()
+    return d["built"] or d["job"] == "running"
+
+
+# ファイル名 -> (ジョブ名, プロンプトの作り方, 使わせるツール, 制限時間)
 JOB_FOR = {
-    "assist": ("assist", lambda d: jobs.assist_prompt(d.get("brief", "")),
-               ["Read", "Write", "Glob", "Grep"], 600),
     "request": ("generate", lambda d: jobs.generate_prompt(),
-                ["Read", "Write", "Edit", "Glob", "Grep", "Bash"], 1800),
+                ["Read", "Write", "Edit", "Glob", "Grep", "Bash"], 2700),
+    # 採用が押されたら、チャットに戻らずそのまま本番のページを作る
+    # Bash は描画して見るため（shoot.py）だけに絞る
+    "decision": ("implement", jobs.implement_prompt,
+                 ["Read", "Write", "Edit", "Glob", "Grep", "Bash(python *)"], 2400),
 }
 
 
@@ -144,23 +180,15 @@ class Handler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
             return
-        if route == "/api/baseline":
-            # 比較したい既存物（現行サイト、過去の案）をプロジェクト側が宣言する
-            f = paths.p("baseline.json")
-            if os.path.exists(f):
-                with open(f, encoding="utf-8") as fh:
-                    return self._json(200, json.load(fh))
-            return self._json(200, {})
+        if route == "/api/decision":
+            return self._json(200, _decision())
         if route == "/api/brief":
-            # /design-dna:start がプロジェクトを読んで書いた下書き
-            f = paths.p("brief.md")
-            if os.path.exists(f):
-                with open(f, encoding="utf-8") as fh:
-                    return self._json(200, {"brief": fh.read().strip()})
-            return self._json(200, {"brief": ""})
+            # picker は project（適用先の名前）だけ使う。作りたいものは画面に出さない
+            return self._json(200, {"brief": _brief(),
+                                    "project": os.path.basename(paths.project_root())})
         if route.startswith("/api/"):
             name = route[len("/api/"):]
-            if name not in ("picks", "request", "decision", "assist"):
+            if name not in ("picks", "request", "decision"):
                 return self._json(404, {"error": "not found"})
             return self._json(200, self._read(name, {"picks": []} if name == "picks" else {}))
         return super().do_GET()
@@ -171,7 +199,7 @@ class Handler(SimpleHTTPRequestHandler):
         if not route.startswith("/api/"):
             return self._json(404, {"error": "not found"})
         name = route[len("/api/"):]
-        if name not in ("picks", "request", "decision", "assist"):
+        if name not in ("picks", "request", "decision"):
             return self._json(404, {"error": "not found"})
         try:
             n = int(self.headers.get("Content-Length") or 0)
@@ -181,16 +209,16 @@ class Handler(SimpleHTTPRequestHandler):
 
         if name == "picks" and not isinstance(data.get("picks"), list):
             return self._json(400, {"error": "picks は配列であること"})
-        if name == "assist" and not (data.get("brief") or "").strip():
-            return self._json(400, {"error": "brief が空"})
+
+        if name in ("request", "decision") and _closed():
+            # 閉じたあとに古いタブから押されても、作り直しや二重の作成を起こさない
+            return self._json(409, {"error": "この回は採用済みです。選び直すときは /design-dna:start から"})
 
         if name == "request":
             data = _derive(data)
+        if name == "decision":
+            data = _target(data)
         self._write(name, data)
-        if name == "assist":
-            # 手で直した brief を残して、次に開いたときの下書きにする
-            with open(paths.p("brief.md"), "w", encoding="utf-8") as fh:
-                fh.write(data["brief"].strip() + os.linesep)
         print("  %s.json <- %s" % (name, self._summary(name, data)), flush=True)
 
         # 選定・生成はここで Claude Code を起こす（押しただけで完結させるため）
@@ -210,20 +238,20 @@ class Handler(SimpleHTTPRequestHandler):
                 print("  %s ジョブの準備に失敗: %s" % (job, msg), flush=True)
                 return self._json(200, {"ok": True, "job": False, "message": msg})
             print("  %s ジョブ: %s%s" % (job, msg, "（隔離）" if box else ""), flush=True)
-            return self._json(200, {"ok": True, "job": ok, "message": msg})
+            return self._json(200, {"ok": True, "job": ok, "message": msg,
+                                    "out": data.get("out")})
         return self._json(200, {"ok": True})
 
     @staticmethod
     def _summary(name, d):
         if name == "picks":
             return "%d 件" % len(d.get("picks", []))
-        if name == "assist":
-            return "「%s」" % (d.get("brief") or "")[:60]
         if name == "request":
-            return "自由度%s%% 解放[%s] %s案" % (
-                d.get("freedom"), "/".join(d.get("released") or []) or "なし", d.get("variants"))
+            return "参照 %s / %s案" % (
+                "・".join(p.get("name") or p.get("id") or "" for p in d.get("picks") or []),
+                d.get("variants"))
         if name == "decision":
-            return "採用: %s (%s)" % (d.get("variant"), d.get("label"))
+            return "採用: %s (%s) -> %s" % (d.get("variant"), d.get("label"), d.get("out"))
         return ""
 
     def log_message(self, fmt, *args):

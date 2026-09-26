@@ -13,7 +13,7 @@ python "${CLAUDE_PLUGIN_ROOT}/tools/reset.py"
 
 | | |
 |---|---|
-| 消す | `.design/` の picks / request / decision / assist |
+| 消す | `.design/` の picks / request / decision / target |
 | 戻す | `.design/` の notes.md / dna.md / ledger.md をテンプレへ |
 | 退避 | `.design/gen/` → `.design/runs/run-NN/`（消さない） |
 

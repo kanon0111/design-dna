@@ -11,7 +11,7 @@
 
   プロジェクト側（1回分・適用先ごと）
     <project>/.design/
-      brief.md  picks.json  request.json  decision.json  assist.json
+      brief.md  content.md  target.json  picks.json  request.json  decision.json
       dna.md  notes.md  ledger.md
       gen/                 生成した案
       runs/                過去の生成案
@@ -29,6 +29,8 @@ CANDIDATES = os.path.join(REFS, "candidates")
 METRICS = os.path.join(REFS, "metrics.json")
 CLUSTERS = os.path.join(REFS, "clusters.json")
 AXES = os.path.join(PLUGIN_ROOT, "axes.md")
+POLISH = os.path.join(PLUGIN_ROOT, "polish.md")
+SHOOT = os.path.join(PLUGIN_ROOT, "tools", "shoot.py")
 WEB = os.path.join(PLUGIN_ROOT, "web")
 PICKER = os.path.join(WEB, "picker.html")
 COMPARE = os.path.join(WEB, "compare.html")

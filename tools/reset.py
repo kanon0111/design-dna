@@ -3,16 +3,20 @@
 触るのは `<project>/.design/` の中だけ。参照プール（プラグイン側）には
 一切手を出さない。集め直すのが高いため。
 
-  消す   picks / request / decision / assist の各 json
+  消す   picks / request / decision / target の各 json（assist は旧版の残り）
   戻す   notes.md / dna.md / ledger.md をテンプレへ
   退避   gen/ -> runs/run-NN/（消さない。同じ座標を再利用しないための記録）
+
+  --reopen  採用（decision.json）だけを外して picker を開き直せる状態にする。
+            採用して本番ページができると picker は閉じるので、/design-dna:start を
+            もう一度呼んだときに使う。参照の選択・生成済みの案・作ったページは残す。
 """
 import io, os, shutil, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paths
 
-STATE = ["picks.json", "request.json", "decision.json", "assist.json"]
+STATE = ["picks.json", "request.json", "decision.json", "assist.json", "target.json"]
 DERIVED = ["axis-values.md"]
 
 NOTES = """# 参照メモ
@@ -32,11 +36,11 @@ NOTES = """# 参照メモ
 
 DNA = """# DNA
 
-`picks.json` の選択から抽出した不変条件。**自由度100%でも壊さない核**。
-DNA を変えたいときは自由度ではなく ref を足して再抽出する。
+`picks.json` の選択から抽出した不変条件。**どの案でも壊さない核**。
+DNA を変えたいときは ref を足して再抽出する。
 
 > **DNA に軸の値を書かないこと**（`axes.md` ルール4）。
-> ここに書いたものは自由度で永久に動かなくなる。方針だけを書き、
+> ここに書いたものはどの案でも動かなくなる。方針だけを書き、
 > 「左寄せ」「ダーク」のような具体値は軸に置く。
 
 軸の**値**（左寄せ／ダーク／疎 など）はここではなく `axis-values.md` に置く。
@@ -49,15 +53,13 @@ LEDGER = """# 生成台帳
 
 同じ座標・同じ ref 組合せを再利用しないための記録。
 
-| id | 自由度 | 解放した軸 | 参照 ref | 採否 | 選んだ / 落とした理由 |
-|---|---:|---|---|---|---|
+| id | 寄せ方 | 参照 ref | 採否 | 選んだ / 落とした理由 |
+|---|---|---|---|---|
 
-## 軸予算の配分について
+## 案の寄せ方
 
-picker は自由度Nに対して**軽い軸から順に**解放軸を決める。ただし axes.md の
-ルール2「同一自由度で複数案を出すときは案ごとに解放する軸をずらす」に従い、
-**生成時は同じ予算内で別の組合せに割り当て直す**。そうしないと3案とも
-同じ軸が動いて似た案が並ぶ。
+案は2つ。a＝参照の配置に近づける / b＝雰囲気のまま内容に合わせて組む。
+（自由度で解放軸を配分する方式は 2026-09-26 に廃止）
 """
 
 
@@ -70,8 +72,20 @@ def next_run_dir():
     return os.path.join(runs, "run-%02d" % n)
 
 
+def reopen(out):
+    f = paths.p("decision.json")
+    if os.path.exists(f):
+        os.remove(f)
+        print("削除  .design/decision.json（picker を開き直せます）", file=out)
+    else:
+        print("採用はまだありません。picker はそのまま使えます", file=out)
+    out.flush()
+
+
 def main():
     out = io.TextIOWrapper(open(1, "wb", closefd=False), encoding="utf-8")
+    if "--reopen" in sys.argv[1:]:
+        return reopen(out)
     d = paths.design_dir()
     if not os.path.isdir(d):
         print("このプロジェクトにはまだ .design/ がありません: %s" % d, file=out)

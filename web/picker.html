@@ -16,6 +16,16 @@
     --mincho:'Zen Old Mincho','Yu Mincho',YuMincho,'Hiragino Mincho ProN',serif;
   }
   *{box-sizing:border-box}
+  /* 採用が決まったら、この回の picker は閉じる（選び直しは /design-dna:start から） */
+  #closed{display:none;max-width:560px;margin:16vh auto 0;padding:0 24px}
+  body.closed > :not(#closed):not(script){display:none !important}
+  body.closed #closed{display:block}
+  #closed h1{font-family:var(--mincho);font-size:26px;font-weight:700;margin:0 0 16px}
+  #closed p{margin:0 0 12px;font-size:14px}
+  #closed .muted{color:var(--muted);font-size:13px}
+  #closed code{font-size:13px;padding:1px 6px;background:var(--band)}
+  #closed a.go{display:inline-block;margin:6px 0 18px;padding:10px 22px;background:var(--fg);
+    color:var(--bg);text-decoration:none;font-weight:700}
   body{margin:0;background:var(--bg);color:var(--fg);
     font-family:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',Meiryo,sans-serif;
     font-weight:400;line-height:1.8}
@@ -86,11 +96,6 @@
   .card{position:relative;border:0;border-radius:0;overflow:visible;background:none;
     cursor:pointer;transition:.12s}
   .card:hover{opacity:.78}
-  /* 自由度が低いときは、構図が読めない参照を軸にできない */
-  .card.blocked{opacity:.34}
-  .card.blocked .thumb{filter:grayscale(1)}
-  .card.blocked::after{content:"軸にできない";position:absolute;left:0;bottom:34px;
-    background:var(--line);color:var(--bg);font-size:10.5px;letter-spacing:.08em;padding:3px 9px}
   .card.on{opacity:1}
   .card.on .thumb{outline:2px solid var(--line);outline-offset:4px}
   .thumb{aspect-ratio:3/4;background:#fff;overflow:hidden;display:block;
@@ -114,7 +119,7 @@
     opacity:0;transition:.15s;cursor:pointer}
   .hidden{display:none}
 
-  /* --- 自由度 --- */
+  /* --- 下のパネル --- */
   /* 画面の下端に固定。bottom を負にすると下端より下へ沈む（--drop は #pgrip が書き換える）。
      sticky だとページ末尾では沈められないので fixed にし、場所を取らない分は --pspace で末尾に空ける */
   body{padding-bottom:var(--pspace,0px)}
@@ -133,16 +138,8 @@
     display:flex;align-items:baseline;gap:12px}
   #panel .hint{font-size:11.5px;color:var(--muted);line-height:1.7}
   #panel .hint b{color:var(--fg);font-weight:700}
-  input[type=range]{width:100%;accent-color:var(--pick);height:12px}
-  .fnum{font-family:var(--mincho);font-size:40px;font-weight:700;line-height:1;letter-spacing:-.01em}
-  .axes{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px}
-  .ax{font-size:12px;padding:4px 11px;border-radius:0;border:1px solid var(--soft);color:var(--dim)}
-  .ax.free{background:var(--line);border-color:var(--line);color:var(--bg)}
-  .ax.slip{border-color:var(--pick);border-style:dashed;color:var(--pick)}
-  .fnum.slip{color:var(--pick)}
-  #panel .hint .warn{color:var(--pick)}
-  select{font:inherit;font-family:var(--mincho);font-size:18px;padding:6px 2px;border-radius:0;
-    border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg)}
+  .plan{display:flex;gap:28px;flex-wrap:wrap;font-size:13px;line-height:1.7}
+  .plan b{font-family:var(--mincho);font-size:16px;margin-right:8px}
   button.go{background:var(--line);border:0;color:var(--bg);font-weight:500;
     font-size:16px;padding:17px 46px;letter-spacing:.04em}
   button.go:hover{background:var(--pick)}
@@ -150,24 +147,16 @@
   #reqmsg{font-size:12px;color:var(--muted);margin-top:8px}
   #reqmsg.ok{color:var(--fg)}
 
-  /* --- おまかせ --- */
+  /* --- 選択中 ---
+     作りたいもの（どんなページか）はチャットで Claude Code に話すこと。
+     ここはデザインを選ぶだけの画面なので、その欄もおまかせも置かない。 */
   #ai{max-width:1560px;margin:0 auto;border:0;border-bottom:1px solid var(--rule);
     background:none;padding:0 0 30px}
-  #ai .cap{font-family:var(--mincho);font-size:17px;color:var(--fg);line-height:1.8;
-    padding:30px 0 14px}
-  #ai .cap b{font-weight:700}
-  #ai .row{display:flex;gap:32px;align-items:flex-end;flex-wrap:wrap}
-  #ai textarea{flex:1;min-width:300px;min-height:52px;resize:vertical;font:inherit;font-size:16px;
-    padding:0 0 11px;border-radius:0;border:0;border-bottom:1px solid var(--line);
-    background:none;color:var(--fg);line-height:1.7}
-  #ai textarea::placeholder{color:var(--dim)}
-  button.ask{background:var(--line);border:0;color:var(--bg);font-weight:500;
-    font-size:15px;padding:15px 26px;white-space:nowrap}
-  button.ask:hover{background:var(--pick)}
+  .dest{font-family:var(--mincho);font-size:18px;padding:6px 2px;
+    border-bottom:1px solid var(--line);color:var(--fg);word-break:break-all}
   #aimsg{font-size:12.5px;color:var(--muted);margin-top:12px}
   #aimsg.ok{color:var(--fg)}
 
-  /* --- 選択中 --- */
   #proposal{display:none;margin-top:34px;border:0;padding-top:0}
   #proposal.on{display:block}
   #proposal h3{font-family:var(--mincho);font-size:20px;margin:0 0 22px;font-weight:700;
@@ -200,14 +189,6 @@
     border:0;border-bottom:1px solid var(--soft);background:none;color:#5b5549;
     text-decoration:none;cursor:pointer}
   .pcard .acts a:hover,.pcard .acts button:hover{border-bottom-color:var(--line);color:var(--line)}
-  #paccept{display:flex;gap:14px}
-  #paccept .go{background:var(--pick);font-size:14.5px;padding:13px 30px}
-  #paccept .go:hover{background:var(--line)}
-  #paccept button:not(.go){border:1px solid var(--soft);border-bottom-width:1px;
-    padding:13px 26px;font-size:14.5px;color:#5b5549}
-  #paccept button:not(.go):hover{border-color:var(--line);background:none}
-  .aitag{font-size:11px;letter-spacing:.16em;color:var(--pick);
-    border:1px solid var(--pick);border-radius:0;padding:3px 9px}
 
   /* --- 拡大表示 --- */
   #lb{position:fixed;inset:0;z-index:100;background:rgba(28,26,23,.92);display:none;
@@ -224,6 +205,7 @@
 </style>
 </head>
 <body>
+<section id="closed" aria-live="polite"></section>
 <header>
   <h1>参考にするデザインを選ぶ</h1>
   <span class="spacer"></span>
@@ -234,22 +216,11 @@
 <main>
   <!-- 段階1 -->
   <section id="ai">
-    <p class="cap">
-      作りたいものを書くと、227件から選びます。1〜3分かかります。
-    </p>
-    <div class="row">
-      <textarea id="brief" placeholder="例: 個人経営のカフェ。落ち着いていて、安っぽく見えないもの。"></textarea>
-      <button class="ask" onclick="askAI()">おまかせで選ぶ</button>
+    <div id="proposal">
+      <h3>選択中</h3>
+      <div class="pcards" id="reasons"></div>
     </div>
     <div id="aimsg"></div>
-    <div id="proposal">
-      <h3><span id="ptitle">選択中</span> <span class="aitag" id="ptag" style="display:none">未確定</span></h3>
-      <div class="pcards" id="reasons"></div>
-      <div id="paccept">
-        <button class="go" onclick="acceptAI()">これでいく</button>
-        <button onclick="rejectAI()">やめる</button>
-      </div>
-    </div>
   </section>
 
   <section id="v1">
@@ -281,21 +252,16 @@
     aria-label="パネルの位置。上下にドラッグか矢印キーで動かせます。ダブルクリックで元に戻す"
     title="上下にドラッグで位置を調整（ダブルクリックで元に戻す）"></div>
   <div class="col grow">
-    <label>自由度 <span class="fnum" id="fv">50</span>%</label>
-    <input type="range" id="freedom" min="0" max="100" step="5" value="50">
-    <div class="axes" id="axes"></div>
-    <div class="hint" id="fhint"></div>
-  </div>
-  <div class="col">
-    <label>案の数</label>
-    <select id="variants"></select>
-    <div class="hint" id="vhint"></div>
+    <label>案は2つ出します</label>
+    <div class="plan">
+      <span><b>案A</b>選んだデザインの配置に近づける</span>
+      <span><b>案B</b>選んだデザインの雰囲気のまま、内容が読みやすい組み方にする</span>
+    </div>
+    <div class="hint">どちらも色・書体・飾りは選んだデザインから借り、文字の大きさや余白は内容に合わせて整えます。</div>
   </div>
   <div class="col">
     <label>適用先</label>
-    <select id="target">
-      <option value="cafe">Cafe Little Leaf</option>
-    </select>
+    <div class="dest" id="target">—</div>
     <button class="go" id="go" onclick="decide()">決定</button>
     <div id="reqmsg"></div>
   </div>
@@ -378,8 +344,7 @@ function toDetail(cid){
   document.getElementById("cmeta").textContent=cur.members.length+" 件";
   document.getElementById("grid").innerHTML=cur.members.map(id=>{
     const it=byId[id]; if(!it) return "";
-    const blocked = (sel.length===0 && strictMode() && it.src!=="GODLY");
-    return '<div class="card'+(blocked?" blocked":"")+'" data-id="'+it.id+'">'+
+    return '<div class="card" data-id="'+it.id+'">'+
       '<div class="badge"></div>'+
       '<button class="ext zoom" data-zoom="'+it.id+'">拡大</button>'+
       '<div class="thumb"><img loading="lazy" referrerpolicy="no-referrer" src="'+it.thumb+'"'+
@@ -408,21 +373,10 @@ function toCats(){
 function fallback(img){ if(img.dataset.alt){img.src=img.dataset.alt;img.removeAttribute("data-alt");} }
 
 /* ---------- 選択 ---------- */
-// 自由度がこれ以下なら「真似たい」意図とみなし、構図が読めない参照を軸にさせない
-const STRICT_BELOW=30;
-function strictMode(){
-  const el=document.getElementById("freedom");
-  return el ? (+el.value) < STRICT_BELOW : false;
-}
 function toggle(id){
   const i=rankOf(id);
   if(i>=0){ sel.splice(i,1); sync(); return; }
   if(sel.length>=MAX){ setStatus(MAX+"枚まで。外してから選んでください","ng"); return; }
-  const it=byId[id];
-  if(sel.length===0 && strictMode() && it && it.src!=="GODLY"){
-    setStatus("自由度が低いので、軸はフルページのある GODLY から選んでください","ng");
-    return;
-  }
   sel.push({id:id, hint:""}); sync();
 }
 // バッジを押すと「軸」に繰り上げる
@@ -442,7 +396,7 @@ function paint(){
 }
 function clearAll(){ sel=[]; sync(); }
 
-function sync(){ renderSlots(); renderProposal(); paint(); renderFreedom(); save(); }
+function sync(){ renderSlots(); renderProposal(); paint(); save(); }
 
 /* ---------- 保存 ---------- */
 let timer=null;
@@ -465,19 +419,11 @@ async function push(){
   }catch(e){ setStatus("保存できず（サーバ未起動？）","ng"); }
 }
 
-// /design-dna:start がプロジェクトを読んで書いた下書きを入れておく。
-// 白紙の欄を埋めさせないため。中身は編集できる。
-async function loadBrief(){
-  const box=document.getElementById("brief");
-  if(!box || box.value.trim()) return;
+// 適用先の名前だけ出す。作りたいもの（どんなページか）はチャットで話すもので、ここには出さない
+async function loadProject(){
   try{
     const d=await (await fetch("/api/brief",{cache:"no-store"})).json();
-    if(d.brief){
-      box.value=d.brief;
-      const cap=document.querySelector("#ai .cap");
-      if(cap) cap.insertAdjacentHTML("beforeend",
-        ' <span style="color:var(--pick)">このプロジェクトから下書きしました。直せます。</span>');
-    }
+    if(d.project) document.getElementById("target").textContent=d.project;
   }catch(e){}
 }
 
@@ -486,90 +432,31 @@ async function load(){
     const r=await fetch("/api/picks",{cache:"no-store"});
     if(!r.ok) throw 0;
     const d=await r.json();
-    // 旧形式（role つき）も並び順として受ける
+    // 旧形式（role つき・おまかせの by:"ai"）も並び順として受ける
     sel=(d.picks||[]).filter(p=>byId[p.id]).map(p=>({id:p.id,hint:p.hint||""}));
-    const ai=(d.picks||[]).filter(p=>p.by==="ai");
-    if(ai.length){ showProposal(ai); setStatus("未確定"); }
-    else setStatus(sel.length?"保存済みを読み込み":"未選択");
+    setStatus(sel.length?"保存済みを読み込み":"未選択");
   }catch(e){
     try{ const v=JSON.parse(localStorage.getItem(KEY)||"[]"); sel=Array.isArray(v)?v:[]; }
     catch(_){ sel=[]; }
     setStatus("サーバ未接続・ローカル保存のみ","ng");
   }
   renderCats(); renderSlots(); renderProposal();
-  renderFreedom();          // 読み取れない軸は軸の出典で決まるので、読み込み後に出し直す
-  loadBrief();
-}
-/* ---------- AIに選んでもらう ---------- */
-// 選定は Claude Code 側でやる。ここは依頼を書き出し、戻ってきた提案を見せるだけ。
-let aiReasons=null;
-
-async function askAI(){
-  const brief=document.getElementById("brief").value.trim();
-  if(!brief){ aimsg("作りたいものを一言書いてください",""); return; }
-  const btn=document.querySelector("button.ask");
-  btn.disabled=true;
-  try{
-    const r=await fetch("/api/assist",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({brief})});
-    if(!r.ok) throw 0;
-    const d=await r.json();
-    if(d.job===undefined){
-      aimsg("サーバが古いコードのままです。serve.py を再起動してください","");
-      btn.disabled=false; return;
-    }
-    if(!d.job){ aimsg("起動できませんでした: "+(d.message||""),""); btn.disabled=false; return; }
-    await watch("assist","選んでいます",async function(){
-      // picks.json が書き換わっているので読み直して提案として出す
-      const p=await (await fetch("/api/picks",{cache:"no-store"})).json();
-      const ai=(p.picks||[]).filter(x=>x.by==="ai");
-      if(ai.length){ showProposal(ai); aimsg("選びました","ok"); }
-      else aimsg("結果が書き込まれませんでした","");
-    });
-  }catch(e){ aimsg("サーバに届きませんでした（serve.py を再起動してください）",""); }
-  btn.disabled=false;
+  loadProject();
 }
 function aimsg(t,c){ const e=document.getElementById("aimsg"); e.textContent=t; e.className=c; }
-
-// ジョブの終了まで待って、経過を出し続ける
-async function watch(name,label,onDone){
-  const t0=Date.now();
-  for(;;){
-    await new Promise(r=>setTimeout(r,2000));
-    let s;
-    try{ s=await (await fetch("/api/job?name="+name,{cache:"no-store"})).json(); }
-    catch(e){ continue; }
-    const sec=Math.round((Date.now()-t0)/1000);
-    if(s.status==="running"){ aimsg(label+"…（"+sec+"秒）",""); continue; }
-    if(s.status==="error"){ aimsg("失敗しました: "+(s.message||"").slice(0,200),""); return; }
-    if(s.status==="done"){ await onDone(s); return; }
-  }
-}
-
-function showProposal(picks){
-  aiReasons=picks;
-  sel=picks.filter(function(p){ return byId[p.id]; })
-           .map(function(p){ return {id:p.id, hint:p.hint||""}; });
-  renderProposal();
-}
 
 // 選んだものを並び順で出す。先頭が「軸」、それ以降は「足したもの」。
 // 何をどこから借りるかは AI が決めるので、ここでは役割を持たせない。
 function renderProposal(){
-  const box = document.getElementById("proposal");
-  if(!sel.length && !aiReasons){ box.classList.remove("on"); return; }
-  box.classList.add("on");
-  document.getElementById("ptitle").textContent = aiReasons ? "おまかせの結果" : "選択中";
-  document.getElementById("ptag").style.display = aiReasons ? "" : "none";
-  document.getElementById("paccept").style.display = aiReasons ? "flex" : "none";
+  // 未選択でも出す（「1枚選ぶ」の枠が、何をすればいいかの案内になる）
+  document.getElementById("proposal").classList.add("on");
 
   const cards = sel.map(function(x, i){
     const it = byId[x.id];
-    const info = aiReasons ? aiReasons.find(function(y){ return y.id === x.id; }) : null;
     const head = i === 0
       ? '<span class="r">軸にする</span>'
       : '<span class="r rank2">＋ 足したもの</span>';
-    const why = info && info.reason ? info.reason : (i === 0 ? "この方向でつくる" : "");
+    const why = i === 0 ? "この方向でつくる" : "";
     // 軸には入力欄を出さない（何を借りるか指定させないため）。
     // ただし繰り上げで値が残っている場合は見えなくなるので出す。
     const hint = (i === 0 && !(x.hint || "")) ? "" :
@@ -636,8 +523,8 @@ function warnSkeleton(){
   box.insertAdjacentHTML("afterend",
     '<p id="skelwarn" style="font-size:12px;color:var(--pick);line-height:1.7;margin:0 0 14px">' +
     '軸にした「' + it.name + '」は<b>ヒーロー部分の画像しかありません</b>。' +
-    '構図と密度は読み取れないので、自由度を下げても再現されず、案ごとに変わります。' +
-    'そこまで似せたいなら GODLY の参照を軸にしてください。</p>');
+    'ページ全体の構図は写っていないので、下の方の組み方は内容から組み立てます。' +
+    'ページ全体まで似せたいなら GODLY の参照を軸にしてください。</p>');
 }
 
 /* ---------- 拡大表示 ---------- */
@@ -650,121 +537,9 @@ function openLB(id){
 }
 function closeLB(){ document.getElementById("lb").classList.remove("on"); }
 addEventListener("keydown", function(e){ if(e.key === "Escape") closeLB(); });
-function acceptAI(){
-  aiReasons=null;               // by:"ai" が外れる = 本人の選択として確定
-  sync();
-  aimsg("決まりました。外したり足したりもできます","ok");
-}
-function rejectAI(){
-  sel=[]; aiReasons=null;
-  sync();
-  aimsg("取り消しました","");
-}
-
-/* ---------- 自由度 ---------- */
-// axes.md と同じ重み。軽い軸から順に、重み合計が N を超えない範囲まで解放する。
-const AXES=[["装飾量",2],["階層の跳ね",4],["コントラスト",9],["密度",15],["地の明度",20],["主役",22],["構図",28]];
-
-// 手元の素材で読み取れない軸（axes.md「素材と軸の対応」）。
-// 読み取れない軸は固定しても再現できないので、実質は解放されているのと同じ。
-const UNREADABLE={LAPA:["構図","密度"],AWWWARDS:["構図","密度"],GODLY:[]};
-function unreadable(){
-  const it = sel.length ? byId[sel[0].id] : null;
-  return it ? (UNREADABLE[it.src] || []) : [];
-}
-function released(n){
-  const out=[]; let acc=0;
-  for(const [name,wt] of AXES){ acc+=wt; if(acc<=n) out.push(name); else break; }
-  return out;
-}
-// 自由度で作れる案の数は決まる。
-// 自由度0は「参照をそのまま再現する」なので、答えは1つしかない。
-// そこで3案out させると、2案は必ず参照から外れたものになる。
-function maxVariants(n){
-  if(n<=10) return 1;
-  if(n<=35) return 2;
-  if(n<=70) return 3;
-  return 4;
-}
-function syncVariants(){
-  const n=+document.getElementById("freedom").value;
-  const mx=maxVariants(n);
-  const sel=document.getElementById("variants");
-  const want=Math.min(+(sel.value||3)||3, mx);
-  let html="";
-  for(let i=1;i<=mx;i++) html+='<option value="'+i+'"'+(i===want?' selected':'')+'>'+i+'案</option>';
-  sel.innerHTML=html;
-  sel.disabled=(mx===1);
-  const note = mx===1
-    ? "自由度が低いので1案だけ。参照をそのまま再現するので、答えは1つしかありません"
-    : "動かせる幅が" + (mx<4 ? "狭いので最大"+mx+"案まで。" : "広いので")
-      + "それぞれ違う振り方をします";
-  document.getElementById("vhint").textContent=note;
-}
-
-function renderFreedom(){
-  const n=+document.getElementById("freedom").value;
-  document.getElementById("fv").textContent=n;
-  const free=released(n);
-  const un=unreadable();
-  const fixed=AXES.map(a=>a[0]).filter(a=>!free.includes(a));
-  // 固定のつもりでも、参照から読み取れない軸は再現できない＝実質は解放
-  const slip=fixed.filter(a=>un.includes(a));
-  const slipW=AXES.filter(a=>slip.includes(a[0])).reduce((s,a)=>s+a[1],0);
-  const real=Math.min(100,n+slipW);
-
-  document.getElementById("axes").innerHTML=AXES.map(([name])=>
-    '<span class="ax'+(free.includes(name)?' free':(slip.includes(name)?' slip':''))+'">'+
-    name+(slip.includes(name)?' ?':'')+'</span>').join("");
-
-  const lines=[];
-  lines.push(free.length?'<b>変わる</b>: '+free.join("・"):'<b>変わらない</b>');
-  const held=fixed.filter(a=>!slip.includes(a));
-  lines.push(held.length?'<b>そのまま</b>: '+held.join("・"):'すべて変わる');
-  if(slip.length){
-    lines.push('<b class="warn">読み取れない</b>: '+slip.join("・")+
-      ' — 参照から値が取れないので固定できません。<b>実質 '+real+'%</b>');
-  }
-  document.getElementById("fhint").innerHTML=lines.join('<br>');
-  document.getElementById("fv").className="fnum"+(slipW?" slip":"");
-  syncVariants();
-}
-document.getElementById("freedom").oninput=function(){
-  renderFreedom();
-  if(cur) toDetail(cur.id);      // 軸にできる／できないの印を引き直す
-};
-
-// 表示と実質が離れているときは、押す前に止める。
-// 「10%＝ほとんど真似る」と思って押した人が、実質53%を受け取るのを防ぐ。
-const GAP_LIMIT=15;
-function confirmGap(n, slip, real){
-  if(!slip.length || real - n <= GAP_LIMIT) return true;
-  const it = byId[sel[0].id];
-  return confirm(
-    "自由度 " + n + "% を選びましたが、実質は " + real + "% になります。\n\n" +
-    "軸にした「" + (it ? it.name : "") + "」は" +
-    (it && it.src !== "GODLY" ? "ページ上部の切り抜きしか手元に無いため、" : "") +
-    slip.join("・") + " を読み取れません。\n" +
-    "読み取れない軸は再現できないので、案ごとに違う値になります。\n\n" +
-    "参照をなるべく真似たいなら、いったん中止して\n" +
-    "GODLY の参照（フルページがあるもの）を軸にし直すことをすすめます。\n\n" +
-    "このまま進めますか？");
-}
-
 async function decide(){
   if(!sel.length){ msg("まず1枚選んでください","" ); return; }
-  const n=+document.getElementById("freedom").value;
-  const un=unreadable();
-  const fixedNow=AXES.map(a=>a[0]).filter(a=>!released(n).includes(a));
-  const slip=fixedNow.filter(a=>un.includes(a));
-  const real=Math.min(100,n+AXES.filter(a=>slip.includes(a[0])).reduce((s,a)=>s+a[1],0));
-  if(!confirmGap(n, slip, real)){ msg("中止しました。軸を選び直せます",""); return; }
   const body={
-    freedom:n, released:released(n),
-    unreadable:slip,
-    effectiveFreedom:Math.min(100,n+AXES.filter(a=>slip.includes(a[0])).reduce((s,a)=>s+a[1],0)),
-    variants:+document.getElementById("variants").value,
-    target:document.getElementById("target").value,
     picks:sel.filter(x=>byId[x.id]).map(x=>({id:x.id,name:byId[x.id].name,site:byId[x.id].site,hint:x.hint||""}))
   };
   const go=document.getElementById("go");
@@ -803,14 +578,14 @@ function msg(t,c){ const e=document.getElementById("reqmsg"); e.textContent=t; e
 
 /* ---------- パネルの位置 ---------- */
 // パネルは画面の下端に貼り付く。つまみを下へドラッグすると下端より下へ沈められる。
-// 沈めても「自由度」の数字とバーは見える位置で止める（決定を押すときは戻す）。
+// 沈めても見出し（「案は2つ出します」）は見える位置で止める（決定を押すときは戻す）。
 (function(){
   const panel=document.getElementById("panel");
   const grip=document.getElementById("pgrip");
-  const range=document.getElementById("freedom");
+  const keep0=panel.querySelector(".col.grow label");
   const KEY_DROP="panelDrop";
   let want=0, drop=0;               // want=ユーザーが決めた量, drop=いま実際に沈めている量
-  const maxDrop=()=>Math.max(0,panel.offsetHeight-(range.offsetTop+range.offsetHeight+14));
+  const maxDrop=()=>Math.max(0,panel.offsetHeight-(keep0.offsetTop+keep0.offsetHeight+14));
   const clamp=v=>Math.max(0,Math.min(maxDrop(),Math.round(v)));
   function place(v){
     want=Math.max(0,v);
@@ -860,8 +635,33 @@ function msg(t,c){ const e=document.getElementById("reqmsg"); e.textContent=t; e
   window.addEventListener("resize",fit);
 })();
 
-renderFreedom();
+/* 採用済みなら選別は出さない。作成中は比較画面（進み具合を出す）へ送る */
+async function closedCheck(){
+  let d;
+  try{ d=await (await fetch("/api/decision",{cache:"no-store"})).json(); }catch(e){ return; }
+  if(!(d.built || d.job==="running")) return;
+  const name="案"+String(d.variant||"").toUpperCase()+(d.label?"「"+d.label+"」":"");
+  const box=document.getElementById("closed");
+  const h=document.createElement("h1");
+  h.textContent=d.built ? "このデザインで決まりました" : "本番のページを作っています";
+  box.appendChild(h);
+  const p=document.createElement("p");
+  p.textContent=name+(d.built ? " で "+d.out+" を作りました。" : " で作っています。");
+  box.appendChild(p);
+  const a=document.createElement("a");
+  a.className="go";
+  a.href=d.built ? "/project/"+d.out : "compare.html";
+  a.textContent=d.built ? "ページを開く →" : "進み具合を見る →";
+  box.appendChild(a);
+  box.insertAdjacentHTML("beforeend",
+    '<p class="muted">この画面はもう使いません。タブを閉じて大丈夫です。<br>'+
+    '選び直したくなったら、Claude Code で <code>/design-dna:start</code> を呼んでください。</p>');
+  document.title="採用済み";
+  document.body.classList.add("closed");
+}
+
 load();
+closedCheck();
 </script>
 </body>
 </html>
